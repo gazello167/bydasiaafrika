@@ -1,0 +1,69 @@
+---
+import { kredit } from '../data/kredit';
+import { site } from '../data/site';
+
+interface Props {
+  harga?: number | null;
+  modelName?: string;
+}
+const { harga, modelName = 'BYD' } = Astro.props;
+const hargaAwal = harga ?? kredit.hargaDefault;
+---
+<form
+  id="kalkulator"
+  class="kalkulator"
+  data-wa={site.whatsapp}
+  data-model={modelName}
+>
+  <label>Harga OTR (Rp)
+    <input type="number" name="harga" value={hargaAwal} min="0" step="1000000" inputmode="numeric" />
+  </label>
+  <label>DP (%)
+    <input type="number" name="dp" value={kredit.dpDefault} min={kredit.dpMin} max={kredit.dpMax} inputmode="numeric" />
+  </label>
+  <label>Tenor
+    <select name="tenor">
+      {kredit.tenorOptions.map((t) => (
+        <option value={t} selected={t === kredit.tenorDefault}>{t} tahun</option>
+      ))}
+    </select>
+  </label>
+  <label>Bunga flat (% per tahun)
+    <input type="number" name="bunga" value={kredit.bungaFlatDefault} step="0.1" min="0" inputmode="decimal" />
+  </label>
+
+  <p>Perkiraan cicilan: <span class="hasil" id="hasil">-</span> / bulan</p>
+  <p class="note">{kredit.disclaimer}</p>
+  <a id="wa" class="btn" href="#" target="_blank" rel="noopener">Tanya simulasi via WhatsApp</a>
+</form>
+
+<script>
+  const form = document.getElementById('kalkulator') as HTMLFormElement | null;
+  if (form) {
+    const hasil = document.getElementById('hasil')!;
+    const wa = document.getElementById('wa') as HTMLAnchorElement;
+    const nomor = form.dataset.wa ?? '';
+    const model = form.dataset.model ?? 'BYD';
+    const rupiah = (n: number) =>
+      new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
+
+    const hitung = () => {
+      const d = new FormData(form);
+      const harga = Number(d.get('harga')) || 0;
+      const dpPersen = Number(d.get('dp')) || 0;
+      const tahun = Number(d.get('tenor')) || 1;
+      const bunga = Number(d.get('bunga')) || 0;
+
+      const pokok = harga - (harga * dpPersen) / 100;
+      // Bunga flat: umum dipakai leasing mobil di Indonesia
+      const cicilan = (pokok + pokok * (bunga / 100) * tahun) / (tahun * 12);
+
+      hasil.textContent = rupiah(cicilan);
+      const pesan = `Halo, saya tertarik simulasi kredit ${model}. Harga ${rupiah(harga)}, DP ${dpPersen}%, tenor ${tahun} tahun. Estimasi cicilan ${rupiah(cicilan)}/bulan.`;
+      wa.href = `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
+    };
+
+    form.addEventListener('input', hitung);
+    hitung();
+  }
+</script>

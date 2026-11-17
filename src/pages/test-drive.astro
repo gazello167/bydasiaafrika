@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { models } from '../data/models';
+import { site } from '../data/site';
+---
+<BaseLayout
+  title="Test Drive BYD di Bandung | Dealer BYD Asia Afrika"
+  description="Jadwalkan test drive mobil listrik BYD di dealer Jl. Asia Afrika, Bandung. Isi form, kami lanjutkan via WhatsApp."
+>
+  <section class="section">
+    <div class="container">
+      <h1>Jadwalkan Test Drive</h1>
+      <form id="td" class="kalkulator">
+        <label>Nama
+          <input type="text" name="nama" required autocomplete="name" />
+        </label>
+        <label>Model
+          <select name="model">
+            {models.map((m) => <option value={m.name}>{m.name}</option>)}
+          </select>
+        </label>
+        <label>Tanggal yang diinginkan
+          <input type="date" name="tanggal" />
+        </label>
+        <button class="btn" type="submit">Kirim via WhatsApp</button>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<script define:vars={{ wa: site.whatsapp }}>
+  const form = document.getElementById('td');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = new FormData(form);
+    const pesan = `Halo, saya ${d.get('nama')}. Saya ingin test drive ${d.get('model')}${d.get('tanggal') ? ' pada ' + d.get('tanggal') : ''}.`;
+    window.open(`https://wa.me/${wa}?text=${encodeURIComponent(pesan)}`, '_blank', 'noopener');
+  });
+</script>

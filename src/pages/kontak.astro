@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, waLink } from '../data/site';
+---
+<BaseLayout
+  title="Kontak & Lokasi | Dealer BYD Asia Afrika Bandung"
+  description="Alamat, jam buka, dan kontak dealer BYD di Jl. Asia Afrika, Bandung."
+>
+  <section class="section">
+    <div class="container">
+      <h1>Kontak & Lokasi</h1>
+      <address style="font-style: normal;">
+        <strong>{site.name}</strong><br />
+        {site.address.street}, {site.address.city}, {site.address.region} {site.address.postalCode}<br />
+        Telp: <a href={`tel:${site.phone}`}>{site.phone}</a><br />
+        Email: <a href={`mailto:${site.email}`}>{site.email}</a>
+      </address>
+
+      <h2>Jam Buka</h2>
+      <ul>
+        <li>Senin - Sabtu: 09.00 - 18.00</li>
+        <li>Minggu: 10.00 - 16.00</li>
+      </ul>
+
+      <a class="btn" href={waLink('Halo, saya ingin tanya info showroom.')} target="_blank" rel="noopener">Chat WhatsApp</a>
+
+      {site.mapsEmbedUrl && (
+        <div style="margin-top: 24px;">
+          <iframe
+            src={site.mapsEmbedUrl}
+            title="Lokasi dealer di Google Maps"
+            width="100%"
+            height="360"
+            style="border:0;"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

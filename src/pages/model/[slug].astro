@@ -1,0 +1,70 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import KalkulatorKredit from '../../components/KalkulatorKredit.astro';
+import { models, formatRupiah } from '../../data/models';
+import { site, waLink } from '../../data/site';
+
+export function getStaticPaths() {
+  return models.map((model) => ({ params: { slug: model.slug }, props: { model } }));
+}
+
+const { model } = Astro.props;
+
+const productSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: model.name,
+  description: model.tagline,
+  brand: { '@type': 'Brand', name: 'BYD' },
+  ...(model.hargaOTR
+    ? {
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'IDR',
+          price: model.hargaOTR,
+          availability: 'https://schema.org/InStock',
+          seller: { '@type': 'AutoDealer', name: site.name },
+        },
+      }
+    : {}),
+};
+---
+<BaseLayout
+  title={`${model.name} Bandung | Harga, Spesifikasi & Test Drive`}
+  description={`${model.name} di dealer BYD Asia Afrika Bandung. Cek spesifikasi, simulasi kredit, dan jadwalkan test drive.`}
+  schema={productSchema}
+>
+  <section class="section">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Beranda</a> / <a href="/model">Model</a> / {model.name}
+      </nav>
+      <h1>{model.name}</h1>
+      <p>{model.tagline}</p>
+      <p><strong>{model.hargaOTR ? `Mulai ${formatRupiah(model.hargaOTR)}` : 'Hubungi kami untuk harga terbaru'}</strong></p>
+      <a class="btn" href={waLink(`Halo, saya ingin test drive ${model.name}.`)} target="_blank" rel="noopener">Test drive via WhatsApp</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Spesifikasi</h2>
+      <table class="specs">
+        <tbody>
+          {model.specs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
+        </tbody>
+      </table>
+      <h2>Keunggulan</h2>
+      <ul>
+        {model.highlights.map((h) => <li>{h}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Simulasi Kredit {model.name}</h2>
+      <KalkulatorKredit harga={model.hargaOTR} modelName={model.name} />
+    </div>
+  </section>
+</BaseLayout>

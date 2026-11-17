@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Schema from '../components/Schema.astro';
+import { site, waLink } from '../data/site';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  schema?: Record<string, unknown>;
+}
+
+const { title, description = site.description, image, noindex = false, schema } = Astro.props;
+const canonical = new URL(Astro.url.pathname, site.url).toString();
+const ogImage = image ? new URL(image, site.url).toString() : undefined;
+---
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Schema />
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} />}
+  </head>
+  <body>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+    <a
+      class="wa-float"
+      href={waLink('Halo, saya ingin tanya info BYD di dealer Asia Afrika Bandung.')}
+      target="_blank"
+      rel="noopener"
+      aria-label="Chat WhatsApp"
+    >
+      WhatsApp
+    </a>
+  </body>
+</html>

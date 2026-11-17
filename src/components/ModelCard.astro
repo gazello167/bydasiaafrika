@@ -1,0 +1,16 @@
+---
+import type { CarModel } from '../data/models';
+import { formatRupiah } from '../data/models';
+
+interface Props { model: CarModel }
+const { model } = Astro.props;
+---
+<article class="card">
+  <h3><a href={`/model/${model.slug}`}>{model.name}</a></h3>
+  <p>{model.type}</p>
+  <p>{model.tagline}</p>
+  <p>
+    <strong>{model.hargaOTR ? `Mulai ${formatRupiah(model.hargaOTR)}` : 'Hubungi kami untuk harga'}</strong>
+  </p>
+  <a class="btn secondary" href={`/model/${model.slug}`}>Lihat detail</a>
+</article>

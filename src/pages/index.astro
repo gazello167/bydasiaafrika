@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ModelCard from '../components/ModelCard.astro';
+import { models } from '../data/models';
+import { site, waLink } from '../data/site';
+---
+<BaseLayout
+  title="Dealer BYD Asia Afrika Bandung | Test Drive & Simulasi Kredit"
+  description="Dealer BYD di Jl. Asia Afrika, Bandung. Lihat model, harga, simulasi kredit, dan jadwalkan test drive mobil listrik BYD."
+>
+  <section class="hero">
+    <div class="container">
+      <h1>Dealer BYD di Jl. Asia Afrika, Bandung</h1>
+      <p>
+        Temukan mobil listrik BYD, hitung simulasi kredit, dan jadwalkan test drive
+        langsung di showroom kami di pusat kota Bandung.
+      </p>
+      <a class="btn" href="/test-drive">Jadwalkan Test Drive</a>
+      <a class="btn secondary" href="/kalkulator-kredit">Simulasi Kredit</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Model BYD</h2>
+      <div class="grid">
+        {models.map((m) => <ModelCard model={m} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2>Kunjungi Showroom</h2>
+      <p>
+        {site.address.street}, {site.address.city}, {site.address.region}.
+        <a href={waLink('Halo, saya ingin tanya lokasi dan jam buka showroom.')} target="_blank" rel="noopener">Tanya via WhatsApp</a>
+      </p>
+      <a class="btn secondary" href="/kontak">Lihat lokasi & jam buka</a>
+    </div>
+  </section>
+</BaseLayout>
