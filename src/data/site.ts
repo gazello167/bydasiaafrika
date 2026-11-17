@@ -6,25 +6,25 @@ export const site = {
   url: 'https://bydasiaafrika.com',
   name: 'BYD Asia Afrika Bandung', // TODO: sesuaikan nama dealer resmi
   shortName: 'BYD Asia Afrika',
-  tagline: 'Dealer BYD di Jl. Asia Afrika, Bandung',
+  tagline: 'Dealer BYD di Jl. Asia Afrika No.154, Bandung 40261',
   description:
-    'Dealer BYD di Jl. Asia Afrika, Bandung. Test drive, simulasi kredit, dan info harga mobil listrik BYD.',
-  phone: '+62-22-0000000', // TODO
-  whatsapp: '6281234567890', // TODO: format internasional tanpa + dan 0 depan
+    'Dealer BYD di Jl. Asia Afrika No.154, Bandung. Test drive, simulasi kredit, dan info harga mobil listrik BYD.',
+  phone: '0811-2200-467', // TODO
+  whatsapp: '628112200467', // TODO: format internasional tanpa + dan 0 depan
   email: 'info@bydasiaafrika.com', // TODO
   address: {
-    street: 'Jl. Asia Afrika No. XX', // TODO
+    street: 'Jl. Asia Afrika No. 154', // TODO
     city: 'Bandung',
     region: 'Jawa Barat',
-    postalCode: '40111', // TODO
+    postalCode: '40261', // TODO
     country: 'ID',
   },
-  geo: { lat: -6.9215, lng: 107.6071 }, // TODO: koordinat showroom sebenarnya
+  geo: { lat: -6.9222, lng: 107.6151 }, // TODO: koordinat showroom sebenarnya
   openingHours: [
     { days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '09:00', closes: '18:00' },
     { days: ['Sunday'], opens: '10:00', closes: '16:00' },
   ],
-  mapsEmbedUrl: '', // TODO: URL embed Google Maps
+  mapsEmbedUrl: 'https://maps.app.goo.gl/EmLrpbP3Dvre3NQh7', // TODO: URL embed Google Maps
   social: {
     instagram: '', // TODO
     tiktok: '',
