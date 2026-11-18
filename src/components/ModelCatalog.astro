@@ -1,8 +1,6 @@
 ---
 import ModelCard from './ModelCard.astro';
-import { getModels, powertrainLabels } from '../data/models';
-
-const { models, activeCategories, activePowertrains } = await getModels();
+import { models, activeCategories, activePowertrains, powertrainLabels } from '../data/models';
 ---
 <section class="section" id="model" data-filters>
   <div class="container">

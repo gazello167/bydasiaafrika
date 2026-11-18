@@ -2,11 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import KalkulatorKredit from '../../components/KalkulatorKredit.astro';
 import Pic from '../../components/Pic.astro';
-import { getModels, formatRupiah, powertrainLabels } from '../../data/models';
+import { models, formatRupiah, powertrainLabels } from '../../data/models';
 import { site, waLink } from '../../data/site';
 
-export async function getStaticPaths() {
-  const { models } = await getModels();
+export function getStaticPaths() {
   return models.map((m) => ({ params: { slug: m.slug }, props: { model: m } }));
 }
 

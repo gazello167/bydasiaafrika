@@ -38,12 +38,13 @@ jobs:
           remote_key: ${{ secrets.VPS_SSH_KEY }}
           remote_port: 22
 
-      # 5. Sync source code ke VPS (untuk rebuild manual via CMS/webhook)
-      # Semua src/ disync kecuali folder assets (tidak dipakai lagi, media dari R2).
+      # 5. Sync source code ke VPS (untuk rebuild via CMS/webhook di server).
+      # PENTING: file yang ditulis ulang oleh CMS PHP WAJIB di-exclude
+      # supaya data dari panel admin tidak tertimpa isi repo.
       - name: Sync src/ ke VPS via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          switches: -avzr --chown=bydasiaafrika:bydasiaafrika --exclude='assets/'
+          switches: -avzr --chown=bydasiaafrika:bydasiaafrika --exclude='assets/' --exclude='data/site.ts' --exclude='data/models.ts' --exclude='data/slides.ts' --exclude='data/articles.ts'
           path: src/
           remote_path: /home/bydasiaafrika/htdocs/bydasiaafrika.com/src/
           remote_host: 43.157.209.144

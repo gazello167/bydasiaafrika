@@ -1,8 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getModels, categoryOrder, formatRupiah, powertrainLabels } from '../data/models';
+import { models, categoryOrder, formatRupiah, powertrainLabels } from '../data/models';
 
-const { models } = await getModels();
 const sorted = [...models].sort(
   (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category),
 );

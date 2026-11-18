@@ -1,6 +1,6 @@
 ---
 import Pic from './Pic.astro';
-import { articleCategories, formatTanggal, getArticles, publishedArticles } from '../data/articles';
+import { articleCategories, formatTanggal, publishedArticles } from '../data/articles';
 
 interface Props {
   heading?: string;
@@ -9,8 +9,7 @@ interface Props {
   showAllLink?: boolean;
 }
 const { heading = 'Discover the Latest', limit = 6, grid = false, showAllLink = true } = Astro.props;
-const articles = await getArticles();
-const list = publishedArticles(articles).slice(0, limit);
+const list = publishedArticles().slice(0, limit);
 const usedCategories = articleCategories.filter((c) => list.some((a) => a.category === c));
 ---
 {list.length > 0 && (

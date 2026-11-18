@@ -1,8 +1,5 @@
-// Slide hero. Konten diambil dari CMS (PUBLIC_CMS_API_URL) saat build;
-// jika API tidak tersedia, fallback ke data lokal di bawah.
-// Gambar: URL absolut R2 (https://...) atau path relatif R2 (mis. "hero/nama.webp").
-import { cmsFetch } from '../lib/cms';
-
+// Slide hero. File ini DITULIS ULANG oleh CMS PHP (admin/api/slides.php)
+// setiap kali ada perubahan di panel admin. Jangan edit manual di repo.
 export interface Slide {
   eyebrow: string;
   title: string;
@@ -11,7 +8,7 @@ export interface Slide {
   image?: string;
 }
 
-const localSlides: Slide[] = [
+export const slides: Slide[] = [
   {
     eyebrow: 'Test Drive',
     title: 'Rasakan mobil listrik BYD di Bandung',
@@ -25,29 +22,9 @@ const localSlides: Slide[] = [
     cta: { label: 'Simulasi Kredit', href: '/kalkulator-kredit' },
   },
   {
-    eyebrow: 'Promo', // TODO: ganti dengan promo yang berlaku
+    eyebrow: 'Promo',
     title: 'Promo bulan ini (TODO)',
     text: 'Tulis detail promo resmi di sini, lengkap dengan periode berlaku.',
     cta: { label: 'Lihat Pricelist', href: '/pricelist' },
   },
 ];
-
-// Normalisasi baris DB (snake_case) ke bentuk frontend (camelCase).
-function normalizeSlide(raw: any): Slide {
-  return {
-    eyebrow: raw.eyebrow ?? '',
-    title: raw.title ?? '',
-    text: raw.text ?? '',
-    cta: {
-      label: raw.cta?.label ?? raw.cta_label ?? 'Selengkapnya',
-      href: raw.cta?.href ?? raw.cta_href ?? '#',
-    },
-    image: raw.image ?? undefined,
-  };
-}
-
-// Ambil slide dari CMS; fallback ke data lokal bila API mati/belum di-set.
-export async function getSlides(): Promise<Slide[]> {
-  const remote = await cmsFetch<any[]>('slides');
-  return remote?.length ? remote.map(normalizeSlide) : localSlides;
-}
