@@ -26,3 +26,6 @@ Thumbs.db
 
 # Temp
 *.tmp
+
+# Admin CMS (managed manually via CloudPanel)
+admin/
