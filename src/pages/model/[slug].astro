@@ -221,20 +221,27 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   /* -------- Title -------- */
   .detail-title {
     text-align: center;
-    font-size: 2rem;
-    margin: 1rem 0 2rem;
+    font-size: 1.5rem;
+    margin: 0.5rem 0 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .detail-title { font-size: 2rem; margin: 1rem 0 2rem; }
   }
 
   /* -------- 2-kolom: Galeri | Harga -------- */
   .model-detail-layout {
     display: grid;
-    gap: 2rem;
+    gap: 1.25rem;
     margin-bottom: 2rem;
   }
   @media (min-width: 768px) {
     .model-detail-layout {
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 3fr 2fr;
+      gap: 2rem;
     }
+  }
+  @media (min-width: 1080px) {
+    .model-detail-layout { grid-template-columns: 2fr 1fr; }
   }
 
   /* Slider */
@@ -246,10 +253,13 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   .detail-slider {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 4 / 3;
     background: var(--surface);
     border-radius: var(--radius);
     overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .detail-slider { aspect-ratio: 16 / 9; }
   }
   .slide {
     display: none;
@@ -272,17 +282,23 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
     display: flex;
     gap: 0.5rem;
     overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
   }
+  .detail-thumbs::-webkit-scrollbar { display: none; }
   .thumb {
     flex-shrink: 0;
-    width: 80px;
-    height: 60px;
+    width: 72px;
+    height: 54px;
     border: 2px solid transparent;
     border-radius: 6px;
     background: var(--surface);
     cursor: pointer;
     padding: 0;
     overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .thumb { width: 80px; height: 60px; }
   }
   .thumb.active {
     border-color: var(--accent);
@@ -298,7 +314,10 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   .detail-price-box {
     background: var(--surface);
     border-radius: var(--radius);
-    padding: 1.5rem;
+    padding: 1rem;
+  }
+  @media (min-width: 768px) {
+    .detail-price-box { padding: 1.5rem; }
   }
   .price-highlight {
     display: flex;
@@ -310,9 +329,13 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
     color: var(--muted);
   }
   .price-highlight .value {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  @media (min-width: 768px) {
+    .price-highlight .value { font-size: 1.75rem; }
   }
   .harga-update {
     font-size: 0.875rem;
@@ -322,10 +345,12 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   }
   .price-table {
     width: 100%;
+    min-width: 0; /* override min-width 520px dari global.css */
     border-collapse: collapse;
     margin-bottom: 1rem;
     font-size: 0.875rem;
   }
+  .price-table td:last-child { text-align: right; white-space: nowrap; }
   .price-table th,
   .price-table td {
     padding: 0.5rem;
@@ -343,21 +368,36 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   }
   .tabs-nav {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.25rem;
     border-bottom: 2px solid var(--border);
     overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, #000 92%, transparent);
+  }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+  @media (min-width: 768px) {
+    .tabs-nav {
+      gap: 0.5rem;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
   }
   .tab-btn {
     flex-shrink: 0;
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 0.75rem;
+    font-size: 0.8rem;
     border: none;
     background: transparent;
     color: var(--muted);
-    font: inherit;
+    font-family: inherit;
     font-weight: 600;
     cursor: pointer;
     transition: color 0.2s;
     position: relative;
+  }
+  @media (min-width: 768px) {
+    .tab-btn { padding: 0.75rem 1rem; font-size: 1rem; }
   }
   .tab-btn.active {
     color: var(--ink);
@@ -381,7 +421,7 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
     display: block;
   }
 
-  /* Specs table */
+  /* Specs table: stack label-nilai di layar sempit */
   .specs {
     width: 100%;
     border-collapse: collapse;
@@ -395,6 +435,11 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   .specs th {
     width: 35%;
     font-weight: 600;
+  }
+  @media (max-width: 480px) {
+    .specs th, .specs td { display: block; width: 100%; }
+    .specs th { padding-bottom: 0; border-bottom: 0; color: var(--muted); font-size: 0.85rem; }
+    .specs td { padding-top: 2px; }
   }
 </style>
 
