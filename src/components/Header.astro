@@ -6,7 +6,20 @@ import { mainNav } from '../data/nav';
 ---
 <header class="site">
   <div class="container row">
-    <a class="brand" href="/">{site.shortName}</a>
+    {site.logo.src ? (
+      <a class="brand brand--logo" href="/" aria-label={`${site.shortName}, ke beranda`}>
+        <img
+          src={site.logo.src}
+          alt={site.shortName}
+          width={site.logo.width}
+          height={site.logo.height}
+          fetchpriority="high"
+          decoding="async"
+        />
+      </a>
+    ) : (
+      <a class="brand" href="/">{site.shortName}</a>
+    )}
 
     <nav class="desktop-nav" aria-label="Navigasi utama">
       {mainNav.map((l) => <a href={l.href}>{l.label}</a>)}

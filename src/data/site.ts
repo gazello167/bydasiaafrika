@@ -6,6 +6,14 @@ export const site = {
   url: 'https://bydasiaafrika.com',
   name: 'BYD Asia Afrika Bandung', // TODO: sesuaikan nama dealer resmi
   shortName: 'BYD Asia Afrika',
+  // Logo header. Isi `src` dengan URL gambar (https://...) atau path di public/ (mis. '/logo.svg').
+  // Kosongkan `src` untuk kembali ke teks. Pakai versi logo PUTIH/terang: latar header gelap.
+  // `width`/`height` = ukuran asli gambar (mencegah layout bergeser); tampil setinggi 32px.
+  logo: {
+    src: 'https://byd.gazello.my.id/wp-content/uploads/2025/07/logo.svg', // TODO: URL logo
+    width: 160,
+    height: 32,
+  },
   tagline: 'Dealer BYD di Jl. Asia Afrika, Bandung',
   description:
     'Dealer BYD di Jl. Asia Afrika, Bandung. Test drive, simulasi kredit, dan info harga mobil listrik BYD.',
