@@ -11,7 +11,7 @@ export const site = {
   // `width`/`height` = ukuran asli gambar (mencegah layout bergeser); tampil setinggi 32px.
   logo: {
     src: 'https://byd.gazello.my.id/wp-content/uploads/2025/07/logo.svg', // TODO: URL logo
-    width: 160,
+    width: 120,
     height: 32,
   },
   tagline: 'Dealer BYD di Jl. Asia Afrika, Bandung',
