@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/env.php';
+
 // Database connection
 function getDB() {
     static $pdo = null;

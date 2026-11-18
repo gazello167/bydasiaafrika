@@ -2,6 +2,9 @@
 // Cloudflare R2 Upload Configuration
 // Install AWS SDK: composer require aws/aws-sdk-php
 
+require_once __DIR__ . '/env.php';
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
