@@ -1,0 +1,15 @@
+---
+import Icon from './Icon.astro';
+import { quickLinks } from '../data/nav';
+
+interface Props { flush?: boolean }
+const { flush = false } = Astro.props;
+---
+<nav class:list={['quick', { 'quick--flush': flush }]} aria-label="Layanan">
+  {quickLinks.map((q) => (
+    <a href={q.href}>
+      <Icon name={q.icon} size={36} />
+      <span>{q.label}</span>
+    </a>
+  ))}
+</nav>

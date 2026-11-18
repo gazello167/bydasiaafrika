@@ -1,0 +1,50 @@
+---
+import Pic from './Pic.astro';
+import { articleCategories, formatTanggal, publishedArticles } from '../data/articles';
+
+interface Props {
+  heading?: string;
+  limit?: number;
+  grid?: boolean; // true = selalu grid (halaman /berita), false = carousel di mobile
+  showAllLink?: boolean;
+}
+const { heading = 'Discover the Latest', limit = 6, grid = false, showAllLink = true } = Astro.props;
+const list = publishedArticles().slice(0, limit);
+const usedCategories = articleCategories.filter((c) => list.some((a) => a.category === c));
+---
+{list.length > 0 && (
+  <section class="section" data-filters data-discover>
+    <div class="container">
+      <h2 class="section-title">{heading}</h2>
+
+      <div class="tabs tabs--small" role="group" aria-label="Kategori berita">
+        <button class="tab" type="button" data-filter="topic" data-value="all" aria-pressed="true">All</button>
+        {usedCategories.map((c) => (
+          <button class="tab" type="button" data-filter="topic" data-value={c} aria-pressed="false">{c}</button>
+        ))}
+      </div>
+
+      <div class:list={['discover-track', { 'discover-track--grid': grid }]}>
+        {list.map((a) => (
+          <article class="article" data-item data-topic={a.category}>
+            <div class="thumb">
+              <Pic src={a.image} alt="" width={640} />
+            </div>
+            <div class="article-body">
+              <h3><a href={`/berita/${a.slug}`}>{a.title}</a></h3>
+              <p class="meta"><span class="cat">{a.category}</span> · {formatTanggal(a.date)}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="empty" data-empty hidden>Belum ada konten pada kategori ini.</p>
+
+      {showAllLink && <p class="more"><a href="/berita">Lihat semua berita</a></p>}
+    </div>
+  </section>
+)}
+
+<script>
+  import { initFilters } from '../scripts/filters';
+  document.querySelectorAll<HTMLElement>('[data-discover]').forEach(initFilters);
+</script>

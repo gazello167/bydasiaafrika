@@ -1,14 +1,62 @@
 ---
+import Icon from './Icon.astro';
+import QuickLinks from './QuickLinks.astro';
 import { site } from '../data/site';
+import { mainNav } from '../data/nav';
 ---
 <header class="site">
   <div class="container row">
     <a class="brand" href="/">{site.shortName}</a>
-    <nav aria-label="Navigasi utama">
-      <a href="/model">Model</a>
-      <a href="/kalkulator-kredit">Simulasi Kredit</a>
-      <a href="/test-drive">Test Drive</a>
-      <a href="/kontak">Kontak</a>
+
+    <nav class="desktop-nav" aria-label="Navigasi utama">
+      {mainNav.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+
+    <!-- Burger di sisi kanan (mobile & tablet) -->
+    <button
+      class="menu-btn"
+      type="button"
+      aria-label="Buka menu"
+      aria-expanded="false"
+      aria-controls="menu-panel"
+      data-menu-button
+    >
+      <Icon name="menu" size={28} class="i-open" />
+      <Icon name="close" size={28} class="i-close" />
+    </button>
+  </div>
+
+  <div class="menu-panel" id="menu-panel" data-menu-panel hidden>
+    <QuickLinks flush />
+    <nav aria-label="Navigasi mobile">
+      {mainNav.map((l) => <a href={l.href}>{l.label}</a>)}
     </nav>
   </div>
 </header>
+
+<noscript><style>.menu-panel[hidden]{display:block!important}.menu-btn{display:none!important}</style></noscript>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-button]');
+  const panel = document.querySelector<HTMLElement>('[data-menu-panel]');
+
+  if (btn && panel) {
+    const set = (open: boolean) => {
+      panel.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
+    };
+    btn.addEventListener('click', () => set(panel.hidden));
+    panel.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) set(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) {
+        set(false);
+        btn.focus();
+      }
+    });
+    // Tutup otomatis saat layar melebar ke desktop
+    matchMedia('(min-width: 960px)').addEventListener('change', (e) => e.matches && set(false));
+  }
+</script>

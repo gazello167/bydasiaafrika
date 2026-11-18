@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import WaForm from '../components/WaForm.astro';
 import { models } from '../data/models';
-import { site } from '../data/site';
 ---
 <BaseLayout
   title="Test Drive BYD di Bandung | Dealer BYD Asia Afrika"
@@ -9,31 +9,16 @@ import { site } from '../data/site';
 >
   <section class="section">
     <div class="container">
-      <h1>Jadwalkan Test Drive</h1>
-      <form id="td" class="kalkulator">
-        <label>Nama
-          <input type="text" name="nama" required autocomplete="name" />
-        </label>
-        <label>Model
-          <select name="model">
-            {models.map((m) => <option value={m.name}>{m.name}</option>)}
-          </select>
-        </label>
-        <label>Tanggal yang diinginkan
-          <input type="date" name="tanggal" />
-        </label>
-        <button class="btn" type="submit">Kirim via WhatsApp</button>
-      </form>
+      <h1 class="page-title">Jadwalkan Test Drive</h1>
+      <p class="note">Isi data singkat, lalu kami lanjutkan lewat WhatsApp.</p>
+      <WaForm
+        intro="Halo, saya ingin menjadwalkan test drive."
+        fields={[
+          { name: 'nama', label: 'Nama', required: true },
+          { name: 'model', label: 'Model', type: 'select', options: models.map((m) => m.name) },
+          { name: 'tanggal', label: 'Tanggal yang diinginkan', type: 'date' },
+        ]}
+      />
     </div>
   </section>
 </BaseLayout>
-
-<script define:vars={{ wa: site.whatsapp }}>
-  const form = document.getElementById('td');
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const d = new FormData(form);
-    const pesan = `Halo, saya ${d.get('nama')}. Saya ingin test drive ${d.get('model')}${d.get('tanggal') ? ' pada ' + d.get('tanggal') : ''}.`;
-    window.open(`https://wa.me/${wa}?text=${encodeURIComponent(pesan)}`, '_blank', 'noopener');
-  });
-</script>

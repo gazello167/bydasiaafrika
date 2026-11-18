@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WaForm from '../components/WaForm.astro';
+import { models } from '../data/models';
+---
+<BaseLayout
+  title="Trade In Mobil ke BYD | Dealer BYD Asia Afrika Bandung"
+  description="Tukar tambah mobil lama Anda dengan mobil listrik BYD. Isi data mobil, kami hubungi lewat WhatsApp."
+>
+  <section class="section">
+    <div class="container">
+      <h1 class="page-title">Trade In</h1>
+      <p class="note">Ceritakan mobil Anda saat ini. Estimasi nilai final menunggu pengecekan fisik.</p>
+      <WaForm
+        intro="Halo, saya ingin tanya trade in."
+        submitLabel="Kirim data via WhatsApp"
+        fields={[
+          { name: 'nama', label: 'Nama', required: true },
+          { name: 'hp', label: 'Nomor HP', type: 'tel', required: true },
+          { name: 'mobil', label: 'Mobil saat ini (merek dan tipe)', required: true },
+          { name: 'tahun', label: 'Tahun produksi', type: 'number' },
+          { name: 'km', label: 'Kilometer saat ini', type: 'number' },
+          { name: 'incaran', label: 'Model BYD yang diminati', type: 'select', options: models.map((m) => m.name) },
+        ]}
+      />
+    </div>
+  </section>
+</BaseLayout>

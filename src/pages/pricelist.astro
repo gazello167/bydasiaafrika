@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { models, categoryOrder, formatRupiah, powertrainLabels } from '../data/models';
+
+const sorted = [...models].sort(
+  (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category),
+);
+---
+<BaseLayout
+  title="Pricelist Mobil BYD Bandung | Dealer BYD Asia Afrika"
+  description="Daftar harga mobil BYD di dealer Asia Afrika Bandung, per model dan kategori. Hubungi kami untuk harga dan promo terbaru."
+>
+  <section class="section">
+    <div class="container">
+      <h1 class="page-title">Pricelist BYD</h1>
+      <p class="note">Harga OTR Bandung. Harga dan promo dapat berubah sewaktu-waktu.</p>
+
+      <div class="table-wrap">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">Kategori</th>
+              <th scope="col">Penggerak</th>
+              <th scope="col">Harga OTR</th>
+              <th scope="col"><span class="sr-only">Aksi</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((m) => (
+              <tr>
+                <th scope="row"><a href={`/model/${m.slug}`}>{m.name}</a></th>
+                <td>{m.category}</td>
+                <td>{powertrainLabels[m.powertrain]}</td>
+                <td>{m.hargaOTR ? formatRupiah(m.hargaOTR) : 'Hubungi kami'}</td>
+                <td><a href={`/model/${m.slug}#simulasi`}>Simulasi kredit</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,16 +1,23 @@
 ---
-import type { CarModel } from '../data/models';
-import { formatRupiah } from '../data/models';
+import Pic from './Pic.astro';
+import { formatRupiah, powertrainLabels, type CarModel } from '../data/models';
 
 interface Props { model: CarModel }
 const { model } = Astro.props;
 ---
-<article class="card">
-  <h3><a href={`/model/${model.slug}`}>{model.name}</a></h3>
-  <p>{model.type}</p>
-  <p>{model.tagline}</p>
-  <p>
-    <strong>{model.hargaOTR ? `Mulai ${formatRupiah(model.hargaOTR)}` : 'Hubungi kami untuk harga'}</strong>
-  </p>
-  <a class="btn secondary" href={`/model/${model.slug}`}>Lihat detail</a>
+<article class="car-card" data-item data-category={model.category} data-power={model.powertrain}>
+  {model.isNew && <span class="badge-new">NEW!</span>}
+  <div class="car-info">
+    <h3><a href={`/model/${model.slug}`}>{model.name.replaceAll('-', '‑')}</a></h3>
+    <p class="price-label">Mulai Dari</p>
+    <p class="price">{model.hargaOTR ? formatRupiah(model.hargaOTR) : 'Hubungi kami'}</p>
+    <ul class="tags">
+      <li>{model.category}</li>
+      <li>{powertrainLabels[model.powertrain]}</li>
+    </ul>
+  </div>
+  <div class="car-media">
+    <Pic src={model.image} alt={model.name} width={420} fallback="car" />
+  </div>
+  <span class="car-cta" aria-hidden="true">Jelajahi Sekarang</span>
 </article>

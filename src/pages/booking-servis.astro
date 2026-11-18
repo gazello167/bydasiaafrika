@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WaForm from '../components/WaForm.astro';
+import { models } from '../data/models';
+---
+<BaseLayout
+  title="Booking Servis BYD Bandung | Dealer BYD Asia Afrika"
+  description="Booking jadwal servis mobil BYD di Bandung. Isi form singkat, tim kami konfirmasi jadwal lewat WhatsApp."
+>
+  <section class="section">
+    <div class="container">
+      <h1 class="page-title">Booking Servis</h1>
+      <p class="note">Jadwal dikonfirmasi oleh tim kami lewat WhatsApp.</p>
+      <WaForm
+        intro="Halo, saya ingin booking servis."
+        submitLabel="Kirim booking via WhatsApp"
+        fields={[
+          { name: 'nama', label: 'Nama', required: true },
+          { name: 'hp', label: 'Nomor HP', type: 'tel', required: true },
+          { name: 'model', label: 'Model mobil', type: 'select', options: [...models.map((m) => m.name), 'Lainnya'] },
+          { name: 'plat', label: 'Nomor polisi' },
+          { name: 'tanggal', label: 'Tanggal yang diinginkan', type: 'date' },
+          { name: 'keluhan', label: 'Keluhan atau jenis servis', type: 'textarea', placeholder: 'Contoh: servis berkala 10.000 km' },
+        ]}
+      />
+    </div>
+  </section>
+</BaseLayout>

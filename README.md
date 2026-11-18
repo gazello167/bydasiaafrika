@@ -50,3 +50,12 @@ agar otomatis jadi WebP/AVIF responsif. Beri `loading="eager"` dan
 ## Catatan merek
 
 Pastikan penggunaan nama/logo BYD sudah diizinkan prinsipal bila berstatus dealer resmi.
+
+## Konten yang dikelola lewat data (tanpa menyentuh komponen)
+
+- `src/data/models.ts`: model mobil. Tab kategori (MPV, SUV, Sedan, Citycar) dan filter penggerak
+  di beranda dibuat otomatis dari field `category` dan `powertrain`. Foto: taruh di `src/assets/models/`
+  lalu isi `image: 'models/nama.webp'`. Brosur PDF: taruh di `public/brosur/` lalu isi `brosur`.
+- `src/data/slides.ts`: slide hero. `src/data/nav.ts`: menu dan ikon layanan.
+- `src/data/articles.ts`: "Discover the Latest" (All, News & Event, Insight, Promo).
+  Artikel contoh berstatus `draft: true` dan TIDAK tampil di produksi; hapus `draft` setelah isinya asli.

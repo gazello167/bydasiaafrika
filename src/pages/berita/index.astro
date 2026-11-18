@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Discover from '../../components/Discover.astro';
+import { publishedArticles } from '../../data/articles';
+
+const hasArticles = publishedArticles().length > 0;
+---
+<BaseLayout
+  title="Berita, Insight & Promo BYD | Dealer BYD Asia Afrika Bandung"
+  description="Berita dealer, panduan mobil listrik, dan promo terbaru BYD di Bandung."
+>
+  {hasArticles ? (
+    <Discover heading="Berita, Insight & Promo" limit={60} grid showAllLink={false} />
+  ) : (
+    <section class="section">
+      <div class="container">
+        <h1 class="page-title">Berita, Insight & Promo</h1>
+        <p class="empty">Belum ada konten. Cek lagi sebentar lagi, atau lihat <a href="/model">model BYD</a>.</p>
+      </div>
+    </section>
+  )}
+</BaseLayout>

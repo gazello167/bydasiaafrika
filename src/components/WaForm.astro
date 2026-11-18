@@ -1,0 +1,57 @@
+---
+// Form generik yang mengirim isiannya ke WhatsApp sales (tanpa backend).
+import { site } from '../data/site';
+
+interface Field {
+  name: string;
+  label: string;
+  type?: 'text' | 'number' | 'date' | 'tel' | 'select' | 'textarea';
+  options?: string[];
+  required?: boolean;
+  placeholder?: string;
+}
+interface Props {
+  fields: Field[];
+  intro: string; // kalimat pembuka pesan WhatsApp
+  submitLabel?: string;
+}
+const { fields, intro, submitLabel = 'Kirim via WhatsApp' } = Astro.props;
+---
+<form class="form" data-wa-form data-wa={site.whatsapp} data-intro={intro}>
+  {fields.map((f) => (
+    <label>
+      <span>{f.label}</span>
+      {f.type === 'select' ? (
+        <select name={f.name} data-label={f.label} required={f.required}>
+          {f.options?.map((o) => <option value={o}>{o}</option>)}
+        </select>
+      ) : f.type === 'textarea' ? (
+        <textarea name={f.name} data-label={f.label} rows="3" required={f.required} placeholder={f.placeholder}></textarea>
+      ) : (
+        <input
+          type={f.type ?? 'text'}
+          name={f.name}
+          data-label={f.label}
+          required={f.required}
+          placeholder={f.placeholder}
+          inputmode={f.type === 'number' ? 'numeric' : undefined}
+        />
+      )}
+    </label>
+  ))}
+  <button class="btn" type="submit">{submitLabel}</button>
+</form>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>('[data-wa-form]').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const lines = [form.dataset.intro ?? 'Halo'];
+      form.querySelectorAll<HTMLInputElement>('[name]').forEach((el) => {
+        if (el.value) lines.push(`${el.dataset.label ?? el.name}: ${el.value}`);
+      });
+      const url = `https://wa.me/${form.dataset.wa}?text=${encodeURIComponent(lines.join('\n'))}`;
+      window.open(url, '_blank', 'noopener');
+    });
+  });
+</script>

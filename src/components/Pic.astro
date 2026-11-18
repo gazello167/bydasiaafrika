@@ -1,0 +1,37 @@
+---
+// Gambar teroptimasi dari src/assets (WebP/AVIF responsif). Jika file belum ada,
+// tampilkan placeholder agar layout tidak rusak.
+import { Image } from 'astro:assets';
+import { getImage } from '../lib/images';
+
+interface Props {
+  src?: string;
+  alt: string;
+  width?: number;
+  eager?: boolean; // true hanya untuk gambar paling atas (LCP)
+  fallback?: 'car' | 'none';
+  class?: string;
+}
+const { src, alt, width = 480, eager = false, fallback = 'none', class: cls } = Astro.props;
+const img = getImage(src);
+---
+{img ? (
+  <Image
+    src={img}
+    alt={alt}
+    width={width}
+    loading={eager ? 'eager' : 'lazy'}
+    fetchpriority={eager ? 'high' : undefined}
+    class={cls}
+  />
+) : fallback === 'car' ? (
+  <svg class="car-placeholder" viewBox="0 0 120 60" aria-hidden="true">
+    <path
+      d="M8 40c0-6 3-9 9-10l14-12c3-3 7-4 11-4h28c5 0 9 2 12 5l10 11c8 1 12 4 12 10v4H8z"
+      fill="currentColor"
+      opacity=".16"
+    />
+    <circle cx="33" cy="46" r="7" fill="currentColor" opacity=".32" />
+    <circle cx="90" cy="46" r="7" fill="currentColor" opacity=".32" />
+  </svg>
+) : null}

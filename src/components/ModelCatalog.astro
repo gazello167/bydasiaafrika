@@ -1,0 +1,38 @@
+---
+import ModelCard from './ModelCard.astro';
+import { models, activeCategories, activePowertrains, powertrainLabels } from '../data/models';
+---
+<section class="section" id="model" data-filters>
+  <div class="container">
+    <h2 class="section-title">Pilih Mobil</h2>
+    <p class="section-sub">Harga OTR Bandung</p>
+
+    <div class="tabs" role="group" aria-label="Kategori mobil">
+      <button class="tab" type="button" data-filter="category" data-value="all" aria-pressed="true">Semua</button>
+      {activeCategories.map((c) => (
+        <button class="tab" type="button" data-filter="category" data-value={c} aria-pressed="false">{c}</button>
+      ))}
+    </div>
+
+    {activePowertrains.length > 1 && (
+      <div class="chips" role="group" aria-label="Jenis penggerak">
+        <button class="chip" type="button" data-filter="power" data-value="all" aria-pressed="true">Semua</button>
+        {activePowertrains.map((p) => (
+          <button class="chip" type="button" data-filter="power" data-value={p} aria-pressed="false">
+            {powertrainLabels[p]}
+          </button>
+        ))}
+      </div>
+    )}
+
+    <div class="car-grid">
+      {models.map((m) => <ModelCard model={m} />)}
+    </div>
+    <p class="empty" data-empty hidden>Belum ada model pada pilihan ini.</p>
+  </div>
+</section>
+
+<script>
+  import { initFilters } from '../scripts/filters';
+  document.querySelectorAll<HTMLElement>('#model[data-filters]').forEach(initFilters);
+</script>

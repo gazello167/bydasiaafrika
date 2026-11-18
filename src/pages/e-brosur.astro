@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { models } from '../data/models';
+import { waLink } from '../data/site';
+---
+<BaseLayout
+  title="E-Brosur Mobil BYD | Dealer BYD Asia Afrika Bandung"
+  description="Unduh e-brosur mobil BYD atau minta brosur terbaru lewat WhatsApp."
+>
+  <section class="section">
+    <div class="container">
+      <h1 class="page-title">E-Brosur</h1>
+      <p class="note">Pilih model untuk mengunduh brosur. Jika belum tersedia, kami kirim lewat WhatsApp.</p>
+
+      <div class="list-rows">
+        {models.map((m) => (
+          <div class="list-row">
+            <div>
+              <strong>{m.name}</strong><br />
+              <span class="note">{m.category}</span>
+            </div>
+            {m.brosur ? (
+              <a class="btn" href={m.brosur} download>Unduh brosur</a>
+            ) : (
+              <a
+                class="btn secondary"
+                href={waLink(`Halo, saya ingin minta e-brosur ${m.name}.`)}
+                target="_blank"
+                rel="noopener"
+              >Minta via WhatsApp</a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
