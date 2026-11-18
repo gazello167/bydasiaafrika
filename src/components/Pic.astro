@@ -13,12 +13,16 @@ interface Props {
   class?: string;
 }
 const { src, alt, width = 480, eager = false, fallback = 'none', class: cls } = Astro.props;
-const isExternal = typeof src === 'string' && /^https?:\/\//i.test(src);
-const img = isExternal ? null : getImage(src);
+const r2 = import.meta.env.PUBLIC_R2_URL?.replace(/\/$/, '');
+// Deteksi sumber: URL absolut (R2/CDN), path relatif yang seharusnya di R2 (/uploads, /models, /news, /hero, dsb), atau asset lokal.
+const isAbsolute = typeof src === 'string' && /^https?:\/\//i.test(src);
+const looksR2 = typeof src === 'string' && /^\/(uploads|models|news|hero|slides|brosur)\//i.test(src);
+const externalSrc = isAbsolute ? src : looksR2 && r2 ? `${r2}${src}` : null;
+const img = externalSrc ? null : getImage(src);
 ---
-{isExternal ? (
+{externalSrc ? (
   <img
-    src={src}
+    src={externalSrc}
     alt={alt}
     width={width}
     loading={eager ? 'eager' : 'lazy'}

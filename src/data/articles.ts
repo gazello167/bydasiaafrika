@@ -14,6 +14,8 @@ export interface Article {
   draft?: boolean;
 }
 
+import { cmsFetch } from '../lib/cms';
+
 export const articles: Article[] = [
   {
     slug: 'grand-opening-showroom',
@@ -71,9 +73,15 @@ export const articles: Article[] = [
   },
 ];
 
+// Ambil artikel dari CMS; fallback ke data lokal bila API mati/belum di-set.
+export async function getArticles(): Promise<Article[]> {
+  const remote = await cmsFetch<Article[]>('articles');
+  return remote?.length ? remote : articles;
+}
+
 // Draft hanya tampil saat development.
-export const publishedArticles = () =>
-  articles
+export const publishedArticles = (list: Article[] = articles) =>
+  list
     .filter((a) => !a.draft || import.meta.env.DEV)
     .sort((a, b) => b.date.localeCompare(a.date));
 

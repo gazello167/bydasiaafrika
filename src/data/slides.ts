@@ -1,5 +1,8 @@
-// Slide hero. Gambar opsional: taruh di src/assets/hero/ lalu isi image: "hero/nama.webp"
-// (disarankan lebar 1920px, di bawah 200 KB). Tanpa gambar, slide memakai latar gradien.
+// Slide hero. Konten diambil dari CMS (PUBLIC_CMS_API_URL) saat build;
+// jika API tidak tersedia, fallback ke data lokal di bawah.
+// Gambar: URL absolut R2 (https://...) atau path relatif R2 (mis. "hero/nama.webp").
+import { cmsFetch } from '../lib/cms';
+
 export interface Slide {
   eyebrow: string;
   title: string;
@@ -8,7 +11,7 @@ export interface Slide {
   image?: string;
 }
 
-export const slides: Slide[] = [
+const localSlides: Slide[] = [
   {
     eyebrow: 'Test Drive',
     title: 'Rasakan mobil listrik BYD di Bandung',
@@ -28,3 +31,9 @@ export const slides: Slide[] = [
     cta: { label: 'Lihat Pricelist', href: '/pricelist' },
   },
 ];
+
+// Ambil slide dari CMS; fallback ke data lokal bila API mati/belum di-set.
+export async function getSlides(): Promise<Slide[]> {
+  const remote = await cmsFetch<Slide[]>('slides');
+  return remote?.length ? remote : localSlides;
+}

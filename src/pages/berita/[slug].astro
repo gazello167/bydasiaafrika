@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Pic from '../../components/Pic.astro';
-import { publishedArticles, formatTanggal } from '../../data/articles';
+import { getArticles, publishedArticles, formatTanggal } from '../../data/articles';
 import { site } from '../../data/site';
 
-export function getStaticPaths() {
-  return publishedArticles().map((article) => ({ params: { slug: article.slug }, props: { article } }));
+export async function getStaticPaths() {
+  const articles = await getArticles();
+  return publishedArticles(articles).map((article) => ({ params: { slug: article.slug }, props: { article } }));
 }
 
 const { article } = Astro.props;

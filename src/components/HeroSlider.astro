@@ -1,7 +1,8 @@
 ---
 import Icon from './Icon.astro';
 import Pic from './Pic.astro';
-import { slides } from '../data/slides';
+import { getSlides } from '../data/slides';
+const slides = await getSlides();
 ---
 <section class="hero-slider" data-slider aria-roledescription="carousel" aria-label="Promo dan info terbaru">
   <div class="slides" data-track>

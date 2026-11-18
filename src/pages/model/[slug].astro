@@ -2,14 +2,23 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import KalkulatorKredit from '../../components/KalkulatorKredit.astro';
 import Pic from '../../components/Pic.astro';
-import { models, formatRupiah, powertrainLabels } from '../../data/models';
+import { getModels, formatRupiah, powertrainLabels } from '../../data/models';
 import { site, waLink } from '../../data/site';
 
-export function getStaticPaths() {
-  return models.map((model) => ({ params: { slug: model.slug }, props: { model } }));
+export async function getStaticPaths() {
+  const { models } = await getModels();
+  return models.map((m) => ({ params: { slug: m.slug }, props: { model: m } }));
 }
 
 const { model } = Astro.props;
+
+// Fallback data untuk tab detail (jika field belum diisi)
+const galleryList = model.gallery?.length ? model.gallery : [model.image].filter(Boolean);
+const variantList = model.variants?.length
+  ? model.variants
+  : model.hargaOTR
+    ? [{ tipe: 'Standard', harga: model.hargaOTR }]
+    : [];
 
 const productSchema = {
   '@context': 'https://schema.org',
@@ -29,7 +38,10 @@ const productSchema = {
       }
     : {}),
 };
+
+const waMsg = `Halo, saya ingin test drive ${model.name}.`;
 ---
+
 <BaseLayout
   title={`${model.name} Bandung | Harga, Spesifikasi & Test Drive`}
   description={`${model.name} di dealer BYD Asia Afrika Bandung. Cek spesifikasi, simulasi kredit, dan jadwalkan test drive.`}
@@ -40,40 +52,388 @@ const productSchema = {
       <nav class="breadcrumb" aria-label="Breadcrumb">
         <a href="/">Beranda</a> / <a href="/model">Model</a> / {model.name}
       </nav>
-      <div class="detail-top">
-        <div>
-          <h1 class="page-title">{model.name}</h1>
-          <p>{model.tagline} ({model.category}, {powertrainLabels[model.powertrain]})</p>
-          <p><strong>{model.hargaOTR ? `Mulai ${formatRupiah(model.hargaOTR)}` : 'Hubungi kami untuk harga terbaru'}</strong></p>
-          <a class="btn" href={waLink(`Halo, saya ingin test drive ${model.name}.`)} target="_blank" rel="noopener">Test drive via WhatsApp</a>
-          {model.brosur && <a class="btn secondary" href={model.brosur} download>Unduh E-Brosur</a>}
+
+      <h1 class="detail-title">{model.name}</h1>
+
+      <div class="model-detail-layout">
+        <!-- Slider + Thumbnails -->
+        <div class="detail-gallery-wrap">
+          <div class="detail-slider" id="mainSlider">
+            {galleryList.map((src, idx) => (
+              <div class={"slide" + (idx === 0 ? ' active' : '')} data-index={idx}>
+                <Pic src={src} alt={`${model.name} gambar ${idx + 1}`} width={720} />
+              </div>
+            ))}
+          </div>
+          <div class="detail-thumbs" id="thumbs">
+            {galleryList.map((src, idx) => (
+              <button
+                type="button"
+                class={"thumb" + (idx === 0 ? ' active' : '')}
+                data-index={idx}
+                aria-label={`Gambar ${idx + 1}`}
+              >
+                <Pic src={src} alt={`Thumb ${idx + 1}`} width={120} />
+              </button>
+            ))}
+          </div>
         </div>
-        <div class="car-media">
-          <Pic src={model.image} alt={model.name} width={720} eager fallback="car" />
+
+        <!-- Harga -->
+        <div class="detail-price-box">
+          {model.hargaOTR && (
+            <div class="price-highlight">
+              <span class="label">Harga Mulai</span>
+              <span class="value">{formatRupiah(model.hargaOTR)}</span>
+            </div>
+          )}
+          {model.hargaUpdate && (
+            <div class="harga-update">Harga BYD {model.name} Bandung<br />*Update Harga: {model.hargaUpdate}</div>
+          )}
+
+          {variantList.length > 0 && (
+            <table class="price-table">
+              <thead>
+                <tr><th>TIPE</th><th>HARGA</th></tr>
+              </thead>
+              <tbody>
+                {variantList.map((v) => (
+                  <tr>
+                    <td>{v.tipe}</td>
+                    <td>{v.harga ? formatRupiah(v.harga) : 'Hubungi kami'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          <div style="margin-top: 1rem;">
+            <p style="font-size: 0.875rem; color: var(--muted);">
+              Harga dan Program Penjualan <strong>BYD Bandung</strong> tidak mengikat sewaktu waktu dapat berubah.
+            </p>
+            <p style="font-size: 0.875rem; color: var(--muted); margin-top: 0.5rem;">
+              Harga BYD {model.name} Bandung berlaku Per {model.hargaUpdate || 'TBD'}, untuk daerah Bandung & Jawa Barat.
+            </p>
+          </div>
+
+          <a class="btn accent" style="width: 100%; margin-top: 1rem;" href={waLink(waMsg)} target="_blank" rel="noopener">
+            💬 Tanya kami
+          </a>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="detail-tabs" id="tabs">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="deskripsi">DESKRIPSI</button>
+          <button class="tab-btn" data-tab="spesifikasi">SPESIFIKASI</button>
+          <button class="tab-btn" data-tab="warna">WARNA</button>
+          <button class="tab-btn" data-tab="eksterior">EKSTERIOR</button>
+          <button class="tab-btn" data-tab="interior">INTERIOR</button>
+          <button class="tab-btn" data-tab="teknologi">TEKNOLOGI</button>
+          <button class="tab-btn" data-tab="brosur">BROSUR</button>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-pane active" id="tab-deskripsi">
+            <p>{model.deskripsi || model.tagline} ({model.category}, {powertrainLabels[model.powertrain]})</p>
+            <h3>Keunggulan</h3>
+            <ul>
+              {model.highlights.map((h) => <li>{h}</li>)}
+            </ul>
+          </div>
+
+          <div class="tab-pane" id="tab-spesifikasi">
+            <table class="specs">
+              <tbody>
+                {model.specs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tab-pane" id="tab-warna">
+            {model.warna?.length ? (
+              <ul>
+                {model.warna.map((w) => <li>{w}</li>)}
+              </ul>
+            ) : <p class="empty">Data warna dalam proses update.</p>}
+          </div>
+
+          <div class="tab-pane" id="tab-eksterior">
+            {model.eksterior?.length ? (
+              <ul>
+                {model.eksterior.map((e) => <li>{e}</li>)}
+              </ul>
+            ) : <p class="empty">Data eksterior dalam proses update.</p>}
+          </div>
+
+          <div class="tab-pane" id="tab-interior">
+            {model.interior?.length ? (
+              <ul>
+                {model.interior.map((i) => <li>{i}</li>)}
+              </ul>
+            ) : <p class="empty">Data interior dalam proses update.</p>}
+          </div>
+
+          <div class="tab-pane" id="tab-teknologi">
+            {model.teknologi?.length ? (
+              <ul>
+                {model.teknologi.map((t) => <li>{t}</li>)}
+              </ul>
+            ) : <p class="empty">Data teknologi dalam proses update.</p>}
+          </div>
+
+          <div class="tab-pane" id="tab-brosur">
+            {model.brosur ? (
+              <>
+                <p>Unduh katalog resmi untuk spesifikasi lengkap.</p>
+                <a class="btn" href={model.brosur} download>Unduh E-Brosur</a>
+              </>
+            ) : <p class="empty">E-Brosur sedang disiapkan.</p>}
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <h2>Spesifikasi</h2>
-      <table class="specs">
-        <tbody>
-          {model.specs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
-        </tbody>
-      </table>
-      <h2>Keunggulan</h2>
-      <ul>
-        {model.highlights.map((h) => <li>{h}</li>)}
-      </ul>
-    </div>
-  </section>
-
-  <section class="section" id="simulasi">
+  <section class="section" id="simulasi" style="background: var(--surface);">
     <div class="container">
       <h2>Simulasi Kredit {model.name}</h2>
       <KalkulatorKredit harga={model.hargaOTR} modelName={model.name} />
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  /* -------- Breadcrumb -------- */
+  .breadcrumb {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+  .breadcrumb a {
+    text-decoration: none;
+  }
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  /* -------- Title -------- */
+  .detail-title {
+    text-align: center;
+    font-size: 2rem;
+    margin: 1rem 0 2rem;
+  }
+
+  /* -------- 2-kolom: Galeri | Harga -------- */
+  .model-detail-layout {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  @media (min-width: 768px) {
+    .model-detail-layout {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+
+  /* Slider */
+  .detail-gallery-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .detail-slider {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+  }
+  .slide.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .slide img,
+  .slide svg {
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  /* Thumbnails */
+  .detail-thumbs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+  }
+  .thumb {
+    flex-shrink: 0;
+    width: 80px;
+    height: 60px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: var(--surface);
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+  }
+  .thumb.active {
+    border-color: var(--accent);
+  }
+  .thumb img,
+  .thumb svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Harga */
+  .detail-price-box {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+  .price-highlight {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.75rem;
+  }
+  .price-highlight .label {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .price-highlight .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .harga-update {
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+  }
+  .price-table th,
+  .price-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .price-table thead {
+    background: var(--ink-2);
+    color: #fff;
+  }
+
+  /* -------- Tabs -------- */
+  .detail-tabs {
+    margin-top: 2rem;
+  }
+  .tabs-nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+  }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+  }
+  .tab-btn.active {
+    color: var(--ink);
+  }
+  .tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+  .tab-content {
+    padding: 1.5rem 0;
+  }
+  .tab-pane {
+    display: none;
+  }
+  .tab-pane.active {
+    display: block;
+  }
+
+  /* Specs table */
+  .specs {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .specs th,
+  .specs td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .specs th {
+    width: 35%;
+    font-weight: 600;
+  }
+</style>
+
+<script>
+  // Slider
+  const slider = document.getElementById('mainSlider');
+  const thumbs = document.getElementById('thumbs');
+  if (slider && thumbs) {
+    const slides = slider.querySelectorAll('.slide');
+    const buttons = thumbs.querySelectorAll('.thumb');
+    thumbs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.thumb');
+      if (!btn) return;
+      const idx = parseInt(btn.getAttribute('data-index') || '0', 10);
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === idx);
+      });
+      buttons.forEach((b, i) => {
+        b.classList.toggle('active', i === idx);
+      });
+    });
+  }
+
+  // Tabs
+  const tabsEl = document.getElementById('tabs');
+  if (tabsEl) {
+    const nav = tabsEl.querySelector('.tabs-nav');
+    if (nav) {
+      nav.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tab-btn');
+        if (!btn) return;
+        const tab = btn.getAttribute('data-tab');
+        if (!tab) return;
+        nav.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+        tabsEl.querySelectorAll('.tab-pane').forEach((p) => p.classList.remove('active'));
+        btn.classList.add('active');
+        const pane = tabsEl.querySelector('#tab-' + tab);
+        if (pane) pane.classList.add('active');
+      });
+    }
+  }
+</script>

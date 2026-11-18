@@ -1,7 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WaForm from '../components/WaForm.astro';
-import { models } from '../data/models';
+import { getModels } from '../data/models';
+const { models } = await getModels();
 ---
 <BaseLayout
   title="Test Drive BYD di Bandung | Dealer BYD Asia Afrika"

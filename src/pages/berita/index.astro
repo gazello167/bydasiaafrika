@@ -1,9 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Discover from '../../components/Discover.astro';
-import { publishedArticles } from '../../data/articles';
+import { getArticles, publishedArticles } from '../../data/articles';
 
-const hasArticles = publishedArticles().length > 0;
+const articles = await getArticles();
+const hasArticles = publishedArticles(articles).length > 0;
 ---
 <BaseLayout
   title="Berita, Insight & Promo BYD | Dealer BYD Asia Afrika Bandung"

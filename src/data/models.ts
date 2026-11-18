@@ -13,6 +13,11 @@ export const powertrainLabels: Record<Powertrain, string> = {
   PHEV: 'Plug-in Hybrid',
 };
 
+export interface CarVariant {
+  tipe: string;
+  harga: number | null; // null = "Hubungi kami"
+}
+
 export interface CarModel {
   slug: string;
   name: string;
@@ -25,6 +30,15 @@ export interface CarModel {
   highlights: string[];
   image?: string; // path relatif ke src/assets, mis. "models/atto-3.webp"
   brosur?: string; // path PDF di public/, mis. "/brosur/atto-3.pdf"
+  // --- Detail page (semua opsional, ada fallback) ---
+  deskripsi?: string; // paragraf pembuka tab DESKRIPSI; fallback ke tagline
+  gallery?: string[]; // gambar slider; fallback ke [image]
+  variants?: CarVariant[]; // tabel harga per tipe; fallback 1 baris dari hargaOTR
+  hargaUpdate?: string; // mis. "02 November 2026"
+  warna?: string[];
+  eksterior?: string[];
+  interior?: string[];
+  teknologi?: string[];
 }
 
 const todoSpecs = (tipe: string) => [
@@ -34,6 +48,11 @@ const todoSpecs = (tipe: string) => [
   { label: 'Kapasitas penumpang', value: 'TODO' },
 ];
 const todoHighlights = ['Keunggulan 1 (TODO)', 'Keunggulan 2 (TODO)', 'Keunggulan 3 (TODO)'];
+
+// Placeholder konten tab; ganti dengan data resmi per model.
+const todoList = (prefix: string) => [`${prefix} 1 (TODO)`, `${prefix} 2 (TODO)`, `${prefix} 3 (TODO)`];
+
+import { cmsFetch } from '../lib/cms';
 
 export const models: CarModel[] = [
   {
@@ -56,6 +75,16 @@ export const models: CarModel[] = [
     hargaOTR: null,
     specs: todoSpecs('SUV Listrik'),
     highlights: todoHighlights,
+    variants: [
+      { tipe: 'Dynamic', harga: null }, // TODO
+      { tipe: 'Premium', harga: null }, // TODO
+      { tipe: 'Advance+', harga: null }, // TODO
+    ],
+    hargaUpdate: 'TODO',
+    warna: todoList('Warna'),
+    eksterior: todoList('Fitur eksterior'),
+    interior: todoList('Fitur interior'),
+    teknologi: todoList('Fitur teknologi'),
   },
   {
     slug: 'sealion-7',
@@ -111,10 +140,26 @@ export const models: CarModel[] = [
 ];
 
 // Kategori & penggerak yang benar-benar dipakai data (untuk tab/filter)
-export const activeCategories = categoryOrder.filter((c) => models.some((m) => m.category === c));
-export const activePowertrains = (Object.keys(powertrainLabels) as Powertrain[]).filter((p) =>
-  models.some((m) => m.powertrain === p),
-);
+const deriveCategories = (list: CarModel[]) =>
+  categoryOrder.filter((c) => list.some((m) => m.category === c));
+const derivePowertrains = (list: CarModel[]) =>
+  (Object.keys(powertrainLabels) as Powertrain[]).filter((p) =>
+    list.some((m) => m.powertrain === p),
+  );
+
+export const activeCategories = deriveCategories(models);
+export const activePowertrains = derivePowertrains(models);
+
+// Ambil model dari CMS; fallback ke data lokal bila API mati/belum di-set.
+export async function getModels(): Promise<{
+  models: CarModel[];
+  activeCategories: Category[];
+  activePowertrains: Powertrain[];
+}> {
+  const remote = await cmsFetch<CarModel[]>('models');
+  const list = remote?.length ? remote : models;
+  return { models: list, activeCategories: deriveCategories(list), activePowertrains: derivePowertrains(list) };
+}
 
 export const formatRupiah = (n: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
