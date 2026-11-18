@@ -150,14 +150,42 @@ const derivePowertrains = (list: CarModel[]) =>
 export const activeCategories = deriveCategories(models);
 export const activePowertrains = derivePowertrains(models);
 
+// Normalisasi baris DB (snake_case) ke bentuk frontend (camelCase).
+// API publik mungkin mengembalikan kolom DB mentah, jadi kita terima keduanya.
+function normalizeModel(raw: any): CarModel {
+  const num = (v: any) => (v === null || v === undefined || v === '' ? null : Number(v));
+  const arr = (v: any) => (Array.isArray(v) ? v : typeof v === 'string' ? JSON.parse(v || '[]') : []);
+  return {
+    slug: raw.slug,
+    name: raw.name,
+    category: raw.category,
+    powertrain: raw.powertrain,
+    isNew: Boolean(raw.isNew ?? raw.is_new),
+    tagline: raw.tagline ?? '',
+    hargaOTR: num(raw.hargaOTR ?? raw.harga_otr),
+    specs: arr(raw.specs),
+    highlights: arr(raw.highlights),
+    image: raw.image ?? undefined,
+    brosur: raw.brosur ?? undefined,
+    deskripsi: raw.deskripsi ?? undefined,
+    gallery: arr(raw.gallery).length ? arr(raw.gallery) : undefined,
+    variants: arr(raw.variants).length ? arr(raw.variants) : undefined,
+    hargaUpdate: raw.hargaUpdate ?? raw.harga_update ?? undefined,
+    warna: arr(raw.warna).length ? arr(raw.warna) : undefined,
+    eksterior: arr(raw.eksterior).length ? arr(raw.eksterior) : undefined,
+    interior: arr(raw.interior).length ? arr(raw.interior) : undefined,
+    teknologi: arr(raw.teknologi).length ? arr(raw.teknologi) : undefined,
+  };
+}
+
 // Ambil model dari CMS; fallback ke data lokal bila API mati/belum di-set.
 export async function getModels(): Promise<{
   models: CarModel[];
   activeCategories: Category[];
   activePowertrains: Powertrain[];
 }> {
-  const remote = await cmsFetch<CarModel[]>('models');
-  const list = remote?.length ? remote : models;
+  const remote = await cmsFetch<any[]>('models');
+  const list = remote?.length ? remote.map(normalizeModel) : models;
   return { models: list, activeCategories: deriveCategories(list), activePowertrains: derivePowertrains(list) };
 }
 

@@ -73,10 +73,25 @@ export const articles: Article[] = [
   },
 ];
 
+// Normalisasi baris DB (snake_case) ke bentuk frontend.
+function normalizeArticle(raw: any): Article {
+  const arr = (v: any) => (Array.isArray(v) ? v : typeof v === 'string' ? JSON.parse(v || '[]') : []);
+  return {
+    slug: raw.slug,
+    title: raw.title,
+    category: raw.category,
+    date: (raw.date ?? raw.published_at ?? '').slice(0, 10),
+    excerpt: raw.excerpt ?? '',
+    body: arr(raw.body).length ? arr(raw.body) : [raw.content ?? ''].filter(Boolean),
+    image: raw.image ?? undefined,
+    draft: Boolean(raw.draft ?? (raw.status === 'draft')),
+  };
+}
+
 // Ambil artikel dari CMS; fallback ke data lokal bila API mati/belum di-set.
 export async function getArticles(): Promise<Article[]> {
-  const remote = await cmsFetch<Article[]>('articles');
-  return remote?.length ? remote : articles;
+  const remote = await cmsFetch<any[]>('articles');
+  return remote?.length ? remote.map(normalizeArticle) : articles;
 }
 
 // Draft hanya tampil saat development.

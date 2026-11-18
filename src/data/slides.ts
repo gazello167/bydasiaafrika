@@ -32,8 +32,22 @@ const localSlides: Slide[] = [
   },
 ];
 
+// Normalisasi baris DB (snake_case) ke bentuk frontend (camelCase).
+function normalizeSlide(raw: any): Slide {
+  return {
+    eyebrow: raw.eyebrow ?? '',
+    title: raw.title ?? '',
+    text: raw.text ?? '',
+    cta: {
+      label: raw.cta?.label ?? raw.cta_label ?? 'Selengkapnya',
+      href: raw.cta?.href ?? raw.cta_href ?? '#',
+    },
+    image: raw.image ?? undefined,
+  };
+}
+
 // Ambil slide dari CMS; fallback ke data lokal bila API mati/belum di-set.
 export async function getSlides(): Promise<Slide[]> {
-  const remote = await cmsFetch<Slide[]>('slides');
-  return remote?.length ? remote : localSlides;
+  const remote = await cmsFetch<any[]>('slides');
+  return remote?.length ? remote.map(normalizeSlide) : localSlides;
 }
