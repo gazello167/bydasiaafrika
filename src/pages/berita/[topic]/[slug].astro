@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Pic from '../../../components/Pic.astro';
+import { publishedArticles, formatTanggal, topicBySlug } from '../../../data/articles';
+import { site } from '../../../data/site';
+
+export function getStaticPaths() {
+  return publishedArticles().map((article) => ({
+    params: { topic: article.category, slug: article.slug },
+    props: { article },
+  }));
+}
+
+const { article } = Astro.props;
+const topic = topicBySlug(article.category);
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: article.title,
+  datePublished: article.date,
+  description: article.excerpt,
+  articleSection: topic?.label ?? article.category,
+  publisher: { '@type': 'Organization', name: site.name, url: site.url },
+};
+---
+
+<BaseLayout title={`${article.title} | ${site.shortName}`} description={article.excerpt} schema={schema}>
+  <article class="section">
+    <div class="container prose">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Beranda</a> / <a href="/berita">Berita</a> /
+        <a href={`/berita/${article.category}`}>{topic?.label ?? article.category}</a> / {article.title}
+      </nav>
+      <h1 class="page-title">{article.title}</h1>
+      <p class="meta">
+        <a class="cat" href={`/berita/${article.category}`}>{topic?.label ?? article.category}</a>
+        · {formatTanggal(article.date)}
+      </p>
+      {article.image && <Pic src={article.image} alt={article.title} width={960} eager />}
+      {article.body.map((p) => <p>{p}</p>)}
+
+      {topic?.modelSlug && (
+        <p style="margin-top: 2rem;">
+          <a class="btn" href={`/model/${topic.modelSlug}`}>Lihat harga & spesifikasi {topic.label} →</a>
+        </p>
+      )}
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .meta .cat {
+    color: var(--ink);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.85rem;
+    text-decoration: none;
+  }
+  .meta .cat:hover {
+    text-decoration: underline;
+  }
+</style>
