@@ -126,7 +126,7 @@
             btn.textContent = 'Loading...';
             
             try {
-                const res = await fetch('/admin/api/auth.php', {
+                const res = await fetch('/api/auth.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password }),
@@ -135,7 +135,7 @@
                 const data = await res.json();
                 
                 if (data.success) {
-                    window.location.href = '/admin/dashboard.php';
+                    window.location.href = '/dashboard.php';
                 } else {
                     error.textContent = 'Username atau password salah';
                     error.classList.add('show');

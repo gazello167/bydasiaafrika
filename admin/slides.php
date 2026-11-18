@@ -26,7 +26,7 @@ include __DIR__ . '/includes/header.php';
     // Load slides
     async function loadSlides() {
         try {
-            const res = await fetch('/admin/api/slides.php');
+            const res = await fetch('/api/slides.php');
             slides = await res.json();
             renderSlides();
         } catch (err) {
@@ -149,7 +149,7 @@ include __DIR__ . '/includes/header.php';
         showAlert('⏳ Mengupload gambar...', 'success');
         
         try {
-            const res = await fetch('/admin/api/upload.php', {
+            const res = await fetch('/api/upload.php', {
                 method: 'POST',
                 body: formData,
             });
@@ -175,7 +175,7 @@ include __DIR__ . '/includes/header.php';
         saveBtn.textContent = '⏳ Menyimpan...';
         
         try {
-            const res = await fetch('/admin/api/slides.php', {
+            const res = await fetch('/api/slides.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(slides),

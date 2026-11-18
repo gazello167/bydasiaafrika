@@ -28,7 +28,7 @@ include __DIR__ . '/includes/header.php';
     // Load models
     async function loadModels() {
         try {
-            const res = await fetch('/admin/api/models.php');
+            const res = await fetch('/api/models.php');
             models = await res.json();
             renderModels();
         } catch (err) {
@@ -280,7 +280,7 @@ include __DIR__ . '/includes/header.php';
         showAlert('⏳ Mengupload...', 'success');
         
         try {
-            const res = await fetch('/admin/api/upload.php', {
+            const res = await fetch('/api/upload.php', {
                 method: 'POST',
                 body: formData,
             });
@@ -312,7 +312,7 @@ include __DIR__ . '/includes/header.php';
         saveBtn.textContent = '⏳ Menyimpan...';
         
         try {
-            const res = await fetch('/admin/api/models.php', {
+            const res = await fetch('/api/models.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(models),

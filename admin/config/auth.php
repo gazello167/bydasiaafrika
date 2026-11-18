@@ -7,7 +7,7 @@ function isLoggedIn() {
 
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: /admin/index.php');
+        header('Location: /index.php');
         exit;
     }
 }

@@ -152,7 +152,7 @@ include __DIR__ . '/includes/header.php';
     // Load data on page load
     async function loadData() {
         try {
-            const res = await fetch('/admin/api/site.php');
+            const res = await fetch('/api/site.php');
             const data = await res.json();
             
             document.getElementById('description').value = data.description || '';
@@ -221,7 +221,7 @@ include __DIR__ . '/includes/header.php';
         saveBtn.textContent = '⏳ Menyimpan...';
         
         try {
-            const res = await fetch('/admin/api/site.php', {
+            const res = await fetch('/api/site.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),

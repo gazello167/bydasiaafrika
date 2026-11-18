@@ -10,7 +10,7 @@ $username = $_SESSION['admin_username'] ?? 'Admin';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $pageTitle ?? 'Admin' ?> - BYD Asia Afrika CMS</title>
-    <link rel="stylesheet" href="/admin/assets/admin.css">
+    <link rel="stylesheet" href="/assets/admin.css">
 </head>
 <body>
     <nav class="topnav">
@@ -23,16 +23,16 @@ $username = $_SESSION['admin_username'] ?? 'Admin';
     
     <div class="layout">
         <aside class="sidebar">
-            <a href="/admin/dashboard.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : '' ?>">
+            <a href="/dashboard.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : '' ?>">
                 📊 Dashboard
             </a>
-            <a href="/admin/site.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'site.php' ? 'active' : '' ?>">
+            <a href="/site.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'site.php' ? 'active' : '' ?>">
                 ⚙️ Site Config
             </a>
-            <a href="/admin/slides.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'slides.php' ? 'active' : '' ?>">
+            <a href="/slides.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'slides.php' ? 'active' : '' ?>">
                 🖼️ Banner Hero
             </a>
-            <a href="/admin/models.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'models.php' ? 'active' : '' ?>">
+            <a href="/models.php" class="sidebar-link <?= basename($_SERVER['PHP_SELF']) === 'models.php' ? 'active' : '' ?>">
                 🚘 Model Mobil
             </a>
             <hr style="margin: 20px 0; border-color: #444;">

@@ -44,9 +44,9 @@ if (file_exists($dataDir . '/models.ts')) {
 <div class="card">
     <h2 class="card-title">Quick Actions</h2>
     <div class="flex gap-2">
-        <a href="/admin/slides.php" class="btn btn-primary">Edit Banner</a>
-        <a href="/admin/models.php" class="btn btn-primary">Edit Models</a>
-        <a href="/admin/site.php" class="btn btn-secondary">Site Config</a>
+        <a href="/slides.php" class="btn btn-primary">Edit Banner</a>
+        <a href="/models.php" class="btn btn-primary">Edit Models</a>
+        <a href="/site.php" class="btn btn-secondary">Site Config</a>
     </div>
 </div>
 

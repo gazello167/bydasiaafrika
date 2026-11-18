@@ -6,8 +6,8 @@
             if (!confirm('Yakin ingin logout?')) return;
             
             try {
-                await fetch('/admin/api/auth.php', { method: 'DELETE' });
-                window.location.href = '/admin/index.php';
+                await fetch('/api/auth.php', { method: 'DELETE' });
+                window.location.href = '/index.php';
             } catch (err) {
                 alert('Gagal logout');
             }
@@ -22,7 +22,7 @@
             btn.textContent = '⏳ Building...';
             
             try {
-                const res = await fetch('/admin/api/rebuild.php', { method: 'POST' });
+                const res = await fetch('/api/rebuild.php', { method: 'POST' });
                 const data = await res.json();
                 
                 if (data.success) {
