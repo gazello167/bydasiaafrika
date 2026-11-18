@@ -1,0 +1,20 @@
+{
+    "name": "byd-asia-afrika/cms",
+    "description": "CMS Admin for BYD Asia Afrika website",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "aws/aws-sdk-php": "^3.0"
+    },
+    "require-dev": {},
+    "autoload": {
+        "files": [
+            "admin/config/database.php",
+            "admin/config/auth.php",
+            "admin/config/r2.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

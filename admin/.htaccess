@@ -1,0 +1,20 @@
+# Admin CMS .htaccess
+RewriteEngine On
+
+# Force HTTPS (uncomment if needed)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# API routes - allow direct access
+RewriteRule ^api/.+\.php$ - [L]
+
+# Block access to config and includes
+RewriteRule ^(config|includes|db)/ - [F,L]
+
+# Redirect root to index.php (login)
+DirectoryIndex index.php
+
+# PHP settings
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value max_execution_time 300
