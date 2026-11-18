@@ -1,6 +1,7 @@
 import type { IconName } from '../lib/icons';
 
 export const mainNav = [
+  { label: 'Home', href: '/' },
   { label: 'Model', href: '/model' },
   { label: 'Simulasi Kredit', href: '/kalkulator-kredit' },
   { label: 'Test Drive', href: '/test-drive' },
