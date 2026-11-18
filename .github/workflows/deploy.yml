@@ -6,26 +6,47 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy ke VPS CloudPanel via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      # 1. Checkout source code
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          host: 43.157.209.144
-          username: bydasiaafrika
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: 22
-          script: |
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          node-version: 20
+          cache: 'npm'
 
-            cd /home/bydasiaafrika/htdocs/bydasiaafrika.com
+      # 3. Install dependencies & build
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
 
-            # Lindungi file data hasil generate CMS (models.ts, slides.ts, site.ts) agar tidak bentrok saat git pull
-            git stash push -m "cms-data" -- src/data/ || true
-            git pull origin main
-            git stash pop || true
+      # 4. Deploy dist/ ke server via rsync
+      - name: Deploy dist/ ke VPS via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --delete --chown=bydasiaafrika:bydasiaafrika
+          path: dist/
+          remote_path: /home/bydasiaafrika/htdocs/bydasiaafrika.com/dist/
+          remote_host: 43.157.209.144
+          remote_user: bydasiaafrika
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
+          remote_port: 22
 
-            npm install --prefer-offline
-            npm run build
+      # 5. Sync src/data ke VPS (untuk CMS)
+      # Exclude file yang di-edit via CMS agar tidak tertimpa
+      - name: Sync src/data ke VPS via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avzr --chown=bydasiaafrika:bydasiaafrika --exclude='site.ts' --exclude='models.ts' --exclude='slides.ts'
+          path: src/data/
+          remote_path: /home/bydasiaafrika/htdocs/bydasiaafrika.com/src/data/
+          remote_host: 43.157.209.144
+          remote_user: bydasiaafrika
+          remote_key: ${{ secrets.VPS_SSH_KEY }}
+          remote_port: 22
