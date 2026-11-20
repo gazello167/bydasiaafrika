@@ -120,7 +120,7 @@ header.site .row { display: flex; align-items: center; justify-content: space-be
 .slider-btn { display: none; }
 
 @media (min-width: 960px) {
-  .slide { min-height: 540px; align-items: center; }
+  .slide { min-height: 640px; align-items: center; }
   .slide-body { padding: 0 80px; } /* ruang untuk panah prev/next */
   .slider-btn {
     display: grid; place-items: center; position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
@@ -264,6 +264,7 @@ header.site .row { display: flex; align-items: center; justify-content: space-be
 .price-table { width: 100%; border-collapse: collapse; min-width: 520px; }
 .price-table th, .price-table td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); }
 .price-table th { color: var(--bg); background: var(--ink-2); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+.price-table th a {text-decoration: none;}
 
 .list-rows { display: grid; gap: 12px; }
 .list-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 16px; border: 1px solid var(--border); border-radius: var(--radius); }

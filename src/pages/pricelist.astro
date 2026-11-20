@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { models, categoryOrder, formatRupiah, powertrainLabels } from '../data/models';
+import Pic from '../components/Pic.astro';
+import { models, categoryOrder, activeCategories, formatRupiah, powertrainLabels } from '../data/models';
 import { waLink } from '../data/site';
 
 const sorted = [...models].sort(
@@ -11,7 +12,7 @@ const latestUpdate = models.find((m) => m.hargaUpdate)?.hargaUpdate;
 ---
 <BaseLayout
   title="Pricelist Mobil BYD Bandung | Dealer BYD Asia Afrika"
-  description="Daftar harga mobil BYD di dealer Asia Afrika Bandung, per model, tipe/varian, dan kategori. Hubungi kami untuk harga dan promo terbaru."
+  description="Daftar harga OTR mobil BYD terbaru di dealer Asia Afrika Bandung, lengkap per model, tipe/varian, kategori, dan simulasi kredit."
 >
   <section class="section">
     <div class="container">
@@ -19,84 +20,530 @@ const latestUpdate = models.find((m) => m.hargaUpdate)?.hargaUpdate;
         <a href="/">Beranda</a> / Pricelist
       </nav>
 
-      <h1 class="page-title">Pricelist BYD Bandung</h1>
-      <p class="note">
-        Harga OTR Bandung & Jawa Barat{latestUpdate ? ` • Periode: ${latestUpdate}` : ''}. Harga dan promo dapat berubah sewaktu-waktu.
+      <div class="pl-header">
+        <div>
+          <h1 class="page-title">Pricelist BYD Bandung</h1>
+          <p class="note" style="margin: 0;">
+            Harga On The Road (OTR) Bandung & Jawa Barat{latestUpdate ? ` • Periode: ${latestUpdate}` : ''}.
+          </p>
+        </div>
+
+        <!-- Kotak Pencarian Cepat -->
+        <div class="pl-search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="search"
+            id="plSearch"
+            placeholder="Cari model atau tipe (mis. Atto 1, Superior)..."
+            aria-label="Cari model atau tipe mobil BYD"
+          />
+        </div>
+      </div>
+
+      <!-- Filter Kategori Interaktif -->
+      <div class="pl-filters" role="group" aria-label="Filter kategori mobil">
+        <button type="button" class="pl-pill active" data-cat="ALL">
+          Semua Model <span class="pl-count">{sorted.length}</span>
+        </button>
+        {activeCategories.map((cat) => {
+          const count = sorted.filter((m) => m.category === cat).length;
+          return (
+            <button type="button" class="pl-pill" data-cat={cat}>
+              {cat} <span class="pl-count">{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <!-- Daftar Kartu-Tabel Per Model -->
+      <div class="pl-list" id="plList">
+        {sorted.map((m) => {
+          const variants = m.variants?.length
+            ? m.variants
+            : [{ tipe: 'Standard', harga: m.hargaOTR }];
+          const cleanName = m.name.replace(/^BYD\s+/i, '');
+          const validPrices = variants
+            .map((v) => v.harga)
+            .filter((h): h is number => typeof h === 'number' && h > 0);
+          const minPrice = m.hargaOTR || (validPrices.length ? Math.min(...validPrices) : null);
+
+          const searchBlob = `${m.name} ${m.category} ${powertrainLabels[m.powertrain]} ${variants.map((v) => v.tipe).join(' ')}`.toLowerCase();
+
+          return (
+            <article
+              class="pl-card"
+              data-category={m.category}
+              data-search={searchBlob}
+            >
+              <!-- Header Kartu Model -->
+              <div class="pl-card-head">
+                <div class="pl-car-meta">
+                  {m.image && (
+                    <a href={`/model/${m.slug}`} class="pl-thumb" aria-label={`Lihat ${m.name}`}>
+                      <Pic src={m.image} alt={m.name} width={160} />
+                    </a>
+                  )}
+                  <div>
+                    <div class="pl-tags">
+                      <span class="pl-tag-cat">{m.category}</span>
+                      <span class="pl-tag-pt">{powertrainLabels[m.powertrain]}</span>
+                      {m.isNew && <span class="pl-badge-new">NEW</span>}
+                    </div>
+                    <h2 class="pl-car-title">
+                      <a href={`/model/${m.slug}`}>{m.name}</a>
+                    </h2>
+                    {m.hargaUpdate && (
+                      <span class="pl-update">Update: {m.hargaUpdate}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div class="pl-head-right">
+                  {minPrice && (
+                    <div class="pl-start-price">
+                      <span>Mulai Dari</span>
+                      <strong>{formatRupiah(minPrice)}</strong>
+                    </div>
+                  )}
+                  <a href={`/model/${m.slug}`} class="pl-detail-link">
+                    Spesifikasi & Detail →
+                  </a>
+                </div>
+              </div>
+
+              <!-- Tabel Varian Modern -->
+              <div class="pl-variants-table">
+                <div class="pl-vt-head">
+                  <span>Tipe / Varian</span>
+                  <span>Harga OTR Bandung</span>
+                  <span style="text-align: right;">Layanan Cepat</span>
+                </div>
+
+                {variants.map((v) => (
+                  <div class="pl-vt-row">
+                    <div class="pl-vt-type">
+                      <span class="pl-dot"></span>
+                      <strong>{v.tipe}</strong>
+                    </div>
+
+                    <div class="pl-vt-price">
+                      {v.harga ? (
+                        <span class="price-val">{formatRupiah(v.harga)}</span>
+                      ) : (
+                        <span class="price-tbd">Hubungi Kami</span>
+                      )}
+                    </div>
+
+                    <div class="pl-vt-actions">
+                      <a href={`/model/${m.slug}#simulasi`} class="pl-btn-sim">
+                        Simulasi Kredit
+                      </a>
+                      <a
+                        href={waLink(`Halo, saya tertarik dengan BYD ${cleanName} tipe ${v.tipe}. Mohon info promo & hitungan DP ringan.`)}
+                        target="_blank"
+                        rel="noopener"
+                        class="pl-btn-wa"
+                      >
+                        Tanya WA
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <p class="empty" id="plEmpty" hidden>
+        Tidak ada model atau tipe yang sesuai dengan pencarian Anda.
       </p>
 
-      <div class="table-wrap" style="margin-top: 20px;">
-        <table class="price-table">
-          <thead>
-            <tr>
-              <th scope="col">Model</th>
-              <th scope="col">Tipe / Varian</th>
-              <th scope="col">Kategori</th>
-              <th scope="col">Penggerak</th>
-              <th scope="col" style="text-align: right;">Harga OTR</th>
-              <th scope="col" style="text-align: right;">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((m) => {
-              const variants = m.variants?.length
-                ? m.variants
-                : [{ tipe: 'Standard', harga: m.hargaOTR }];
-              const cleanName = m.name.replace(/^BYD\s+/i, '');
-
-              return variants.map((v, idx) => (
-                <tr>
-                  {idx === 0 && (
-                    <th scope="row" rowspan={variants.length} style="vertical-align: top;">
-                      <a href={`/model/${m.slug}`}>{m.name}</a>
-                      {m.isNew && <span class="pl-badge-new">NEW</span>}
-                      {m.hargaUpdate && (
-                        <div class="pl-update">{m.hargaUpdate}</div>
-                      )}
-                    </th>
-                  )}
-                  <td>{v.tipe}</td>
-                  <td>{m.category}</td>
-                  <td>{powertrainLabels[m.powertrain]}</td>
-                  <td style="text-align: right; font-weight: 700; white-space: nowrap;">
-                    {v.harga ? formatRupiah(v.harga) : 'Hubungi kami'}
-                  </td>
-                  <td style="text-align: right; white-space: nowrap;">
-                    <a href={`/model/${m.slug}#simulasi`}>Simulasi</a>
-                    {' · '}
-                    <a
-                      href={waLink(`Halo, saya ingin info promo & kredit BYD ${cleanName} tipe ${v.tipe}.`)}
-                      target="_blank"
-                      rel="noopener"
-                    >
-                      Tanya WA
-                    </a>
-                  </td>
-                </tr>
-              ));
-            })}
-          </tbody>
-        </table>
+      <div class="pl-disclaimer">
+        <p>* Harga OTR berlaku untuk wilayah Bandung & Jawa Barat, tidak mengikat, dan dapat berubah sewaktu-waktu.</p>
+        <p>* Tersedia program bunga ringan, TDP mulai 10%, dan tukar tambah (trade-in) semua merek di BYD Asia Afrika Bandung.</p>
       </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .pl-badge-new {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 1px 6px;
+  .pl-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* Search Input */
+  .pl-search-box {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+  }
+  .pl-search-box svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .pl-search-box input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.9rem;
+    background: #fff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .pl-search-box input:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(180, 210, 51, 0.35);
+  }
+
+  /* Filter Pills */
+  .pl-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .pl-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+  .pl-pill:hover {
+    border-color: var(--ink);
+    background: var(--surface);
+  }
+  .pl-pill.active {
+    background: var(--ink-2);
+    color: #fff;
+    border-color: var(--ink-2);
+  }
+  .pl-count {
+    font-size: 0.75rem;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
+  }
+  .pl-pill.active .pl-count {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  /* List Kartu Model */
+  .pl-list {
+    display: grid;
+    gap: 20px;
+  }
+  .pl-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .pl-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.07);
+  }
+
+  .pl-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px 20px;
+    background: linear-gradient(180deg, #fafafa 0%, #f4f5f6 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .pl-car-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pl-thumb {
+    width: 96px;
+    height: 60px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pl-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .pl-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .pl-tag-cat,
+  .pl-tag-pt {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
     border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .pl-tag-cat {
+    background: var(--ink-2);
+    color: #fff;
+  }
+  .pl-tag-pt {
+    background: #fff;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .pl-badge-new {
     background: var(--accent);
     color: var(--accent-ink);
     font-size: 0.7rem;
     font-weight: 800;
-    vertical-align: middle;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .pl-car-title {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  .pl-car-title a {
+    text-decoration: none;
+  }
+  .pl-car-title a:hover {
+    text-decoration: underline;
   }
   .pl-update {
-    margin-top: 4px;
+    display: block;
     font-size: 0.78rem;
-    font-weight: 400;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .pl-head-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+  }
+  .pl-start-price {
+    text-align: right;
+  }
+  .pl-start-price span {
+    display: block;
+    font-size: 0.72rem;
     color: var(--muted);
   }
+  .pl-start-price strong {
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+  .pl-detail-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .pl-detail-link:hover {
+    border-color: var(--ink);
+  }
+
+  /* Tabel Varian Responsif (Grid Desktop -> Stacked Card Mobile) */
+  .pl-vt-head {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .pl-vt-head {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 240px;
+      padding: 10px 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+    }
+  }
+
+  .pl-vt-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background-color 0.15s ease;
+  }
+  .pl-vt-row:last-child {
+    border-bottom: 0;
+  }
+  .pl-vt-row:hover {
+    background: #f8fafc;
+  }
+  @media (min-width: 768px) {
+    .pl-vt-row {
+      grid-template-columns: 1.4fr 1fr 240px;
+      gap: 12px;
+      padding: 14px 20px;
+    }
+  }
+
+  .pl-vt-type {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.98rem;
+  }
+  .pl-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .pl-vt-price .price-val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .pl-vt-price .price-tbd {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .pl-vt-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  @media (min-width: 768px) {
+    .pl-vt-actions {
+      justify-content: flex-end;
+    }
+  }
+
+  .pl-btn-sim,
+  .pl-btn-wa {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 13px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .pl-btn-sim {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .pl-btn-sim:hover {
+    border-color: var(--ink);
+    background: #e5e7eb;
+  }
+  .pl-btn-wa {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .pl-btn-wa:hover {
+    filter: brightness(0.95);
+  }
+
+  .pl-disclaimer {
+    margin-top: 24px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border-radius: 12px;
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+  .pl-disclaimer p {
+    margin: 0 0 6px;
+  }
+  .pl-disclaimer p:last-child {
+    margin-bottom: 0;
+  }
 </style>
+
+<script>
+  const pills = document.querySelectorAll('.pl-pill');
+  const cards = document.querySelectorAll('.pl-card');
+  const searchInput = document.getElementById('plSearch') as HTMLInputElement | null;
+  const emptyMsg = document.getElementById('plEmpty');
+
+  let activeCat = 'ALL';
+
+  const applyFilter = () => {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    let visibleCount = 0;
+
+    cards.forEach((card) => {
+      const el = card as HTMLElement;
+      const cat = el.dataset.category || '';
+      const blob = el.dataset.search || '';
+
+      const matchCat = activeCat === 'ALL' || cat === activeCat;
+      const matchSearch = !query || blob.includes(query);
+      const show = matchCat && matchSearch;
+
+      el.hidden = !show;
+      if (show) visibleCount++;
+    });
+
+    if (emptyMsg) {
+      emptyMsg.hidden = visibleCount > 0;
+    }
+  };
+
+  pills.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      pills.forEach((p) => p.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = (btn as HTMLElement).dataset.cat || 'ALL';
+      applyFilter();
+    });
+  });
+
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilter);
+  }
+</script>
