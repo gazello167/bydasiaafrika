@@ -55,11 +55,11 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
       <h1 class="detail-title">{model.name}</h1>
 
       <div class="model-detail-layout">
-        <!-- Slider + Thumbnails -->
+       <!-- Slider + Thumbnails -->
         <div class="detail-gallery-wrap">
           <div class="detail-slider" id="mainSlider">
             {galleryList.map((src, idx) => (
-              <div class={"slide" + (idx === 0 ? ' active' : '')} data-index={idx}>
+              <div class={"gallery-slide" + (idx === 0 ? ' active' : '')} data-index={idx}>
                 <Pic src={src} alt={`${model.name} gambar ${idx + 1}`} width={720} />
               </div>
             ))}
@@ -68,7 +68,7 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
             {galleryList.map((src, idx) => (
               <button
                 type="button"
-                class={"thumb" + (idx === 0 ? ' active' : '')}
+                class={"gallery-thumb" + (idx === 0 ? ' active' : '')}
                 data-index={idx}
                 aria-label={`Gambar ${idx + 1}`}
               >
@@ -260,18 +260,18 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   @media (min-width: 768px) {
     .detail-slider { aspect-ratio: 16 / 9; }
   }
-  .slide {
+  .gallery-slide {
     display: none;
     width: 100%;
     height: 100%;
   }
-  .slide.active {
+  .gallery-slide.active {
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .slide img,
-  .slide svg {
+  .gallery-slide img,
+  .gallery-slide svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -286,7 +286,7 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
     padding-bottom: 2px;
   }
   .detail-thumbs::-webkit-scrollbar { display: none; }
-  .thumb {
+  .gallery-thumb {
     flex-shrink: 0;
     width: 72px;
     height: 54px;
@@ -298,13 +298,13 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
     overflow: hidden;
   }
   @media (min-width: 768px) {
-    .thumb { width: 80px; height: 60px; }
+    .gallery-thumb { width: 80px; height: 60px; }
   }
-  .thumb.active {
+  .gallery-thumb.active {
     border-color: var(--accent);
   }
-  .thumb img,
-  .thumb svg {
+  .gallery-thumb img,
+  .gallery-thumb svg {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -448,10 +448,10 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
   const slider = document.getElementById('mainSlider');
   const thumbs = document.getElementById('thumbs');
   if (slider && thumbs) {
-    const slides = slider.querySelectorAll('.slide');
-    const buttons = thumbs.querySelectorAll('.thumb');
+    const slides = slider.querySelectorAll('.gallery-slide');
+    const buttons = thumbs.querySelectorAll('.gallery-thumb');
     thumbs.addEventListener('click', (e) => {
-      const btn = e.target.closest('.thumb');
+      const btn = e.target.closest('.gallery-thumb');
       if (!btn) return;
       const idx = parseInt(btn.getAttribute('data-index') || '0', 10);
       slides.forEach((s, i) => {
