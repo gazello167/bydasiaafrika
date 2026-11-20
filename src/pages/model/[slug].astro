@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import KalkulatorKredit from '../../components/KalkulatorKredit.astro';
 import Pic from '../../components/Pic.astro';
-import { models, formatRupiah, powertrainLabels } from '../../data/models';
+import { models, formatRupiah, powertrainLabels, type FeatureItem } from '../../data/models';
 import { site, waLink } from '../../data/site';
 
 export function getStaticPaths() {
@@ -10,8 +10,8 @@ export function getStaticPaths() {
 }
 
 const { model } = Astro.props;
+const cleanName = model.name.replace(/^BYD\s+/i, '');
 
-// Fallback data untuk tab detail (jika field belum diisi)
 const galleryList = model.gallery?.length ? model.gallery : [model.image].filter(Boolean);
 const variantList = model.variants?.length
   ? model.variants
@@ -19,38 +19,86 @@ const variantList = model.variants?.length
     ? [{ tipe: 'Standard', harga: model.hargaOTR }]
     : [];
 
-// Otomatis ambil harga terendah dari varian jika hargaOTR kosong
 const validPrices = variantList.map((v) => v.harga).filter((h): h is number => typeof h === 'number' && h > 0);
 const startPrice = model.hargaOTR || (validPrices.length ? Math.min(...validPrices) : null);
-const cleanName = model.name.replace(/^BYD\s+/i, '');
+
+// SEO & GEO defaults
+const seoTitle = model.metaTitle?.trim()
+  ? model.metaTitle.trim()
+  : `Harga BYD ${cleanName} Bandung | Spesifikasi, Warna & Test Drive`;
+
+const seoDesc = model.metaDesc?.trim()
+  ? model.metaDesc.trim()
+  : `${model.name} di dealer resmi BYD Asia Afrika Bandung. Cek daftar harga OTR Bandung, spesifikasi, pilihan warna, simulasi kredit & jadwal test drive.`;
+
+const hargaHeading = model.hargaH2?.trim()
+  ? model.hargaH2.trim()
+  : `Harga BYD ${cleanName} Bandung`;
+
+// Normalisasi item Warna / Eksterior / Interior
+function normalizeItems(raw?: (string | FeatureItem)[]): FeatureItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((it) => (typeof it === 'string' ? { judul: it } : it))
+    .filter((it) => it && (it.judul || it.gambar));
+}
+
+const warnaItems = normalizeItems(model.warna);
+const eksteriorItems = normalizeItems(model.eksterior);
+const interiorItems = normalizeItems(model.interior);
+
+const hasWarnaImages = warnaItems.some((it) => Boolean(it.gambar));
+const hasEksteriorImages = eksteriorItems.some((it) => Boolean(it.gambar));
+const hasInteriorImages = interiorItems.some((it) => Boolean(it.gambar));
 
 const productSchema = {
   '@context': 'https://schema.org',
   '@type': 'Product',
   name: model.name,
-  description: model.tagline,
+  description: seoDesc,
+  ...(model.image ? { image: [model.image] } : {}),
+  ...(model.focusKeyword ? { keywords: model.focusKeyword } : {}),
   brand: { '@type': 'Brand', name: 'BYD' },
-  ...(model.hargaOTR
+  ...(startPrice
     ? {
         offers: {
           '@type': 'Offer',
           priceCurrency: 'IDR',
-          price: model.hargaOTR,
+          price: startPrice,
           availability: 'https://schema.org/InStock',
-          seller: { '@type': 'AutoDealer', name: site.name },
+          areaServed: {
+            '@type': 'City',
+            name: 'Bandung',
+          },
+          seller: {
+            '@type': 'AutoDealer',
+            name: site.name,
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: 'Bandung',
+              addressRegion: 'Jawa Barat',
+              addressCountry: 'ID',
+            },
+          },
         },
       }
     : {}),
 };
 
-const waMsg = `Halo, saya ingin test drive ${model.name}.`;
+const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung.`;
 ---
 
 <BaseLayout
-  title={`${model.name} Bandung | Harga, Spesifikasi & Test Drive`}
-  description={`${model.name} di dealer BYD Asia Afrika Bandung. Cek spesifikasi, simulasi kredit, dan jadwalkan test drive.`}
+  title={seoTitle}
+  description={seoDesc}
   schema={productSchema}
 >
+  {model.focusKeyword && (
+    <Fragment slot="head">
+      <meta name="keywords" content={model.focusKeyword} />
+    </Fragment>
+  )}
+
   <section class="section">
     <div class="container">
       <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -60,45 +108,49 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
       <h1 class="detail-title">{model.name}</h1>
 
       <div class="model-detail-layout">
-       <!-- Slider + Thumbnails -->
+        <!-- Slider + Thumbnails -->
         <div class="detail-gallery-wrap">
           <div class="detail-slider" id="mainSlider">
             {galleryList.map((src, idx) => (
               <div class={"gallery-slide" + (idx === 0 ? ' active' : '')} data-index={idx}>
-                <Pic src={src} alt={`${model.name} gambar ${idx + 1}`} width={720} />
+                <Pic src={src} alt={`${model.name} Bandung gambar ${idx + 1}`} width={720} eager={idx === 0} />
               </div>
             ))}
           </div>
-          <div class="detail-thumbs" id="thumbs">
-            {galleryList.map((src, idx) => (
-              <button
-                type="button"
-                class={"gallery-thumb" + (idx === 0 ? ' active' : '')}
-                data-index={idx}
-                aria-label={`Gambar ${idx + 1}`}
-              >
-                <Pic src={src} alt={`Thumb ${idx + 1}`} width={120} />
-              </button>
-            ))}
-          </div>
+          {galleryList.length > 1 && (
+            <div class="detail-thumbs" id="thumbs">
+              {galleryList.map((src, idx) => (
+                <button
+                  type="button"
+                  class={"gallery-thumb" + (idx === 0 ? ' active' : '')}
+                  data-index={idx}
+                  aria-label={`Gambar ${idx + 1}`}
+                >
+                  <Pic src={src} alt={`Thumbnail ${model.name} ${idx + 1}`} width={120} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <!-- Harga -->
+        <!-- Harga (H2 SEO/GEO) -->
         <div class="detail-price-box">
+          <h2 class="price-box-h2">{hargaHeading}</h2>
+
           {startPrice && (
             <div class="price-highlight">
-              <span class="label">Harga Mulai</span>
+              <span class="label">Harga OTR Mulai</span>
               <span class="value">{formatRupiah(startPrice)}</span>
             </div>
           )}
           {model.hargaUpdate && (
-            <div class="harga-update">Harga BYD {cleanName} Bandung<br />*Update Harga: {model.hargaUpdate}</div>
+            <div class="harga-update">*Update Harga: {model.hargaUpdate}</div>
           )}
 
           {variantList.length > 0 && (
             <table class="price-table">
               <thead>
-                <tr><th>TIPE</th><th style="text-align: right;">HARGA</th></tr>
+                <tr><th>TIPE</th><th style="text-align: right;">HARGA OTR</th></tr>
               </thead>
               <tbody>
                 {variantList.map((v) => (
@@ -113,73 +165,162 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
 
           <div style="margin-top: 1rem;">
             <p style="font-size: 0.875rem; color: var(--muted);">
-              Harga dan Program Penjualan <strong>BYD Bandung</strong> tidak mengikat sewaktu waktu dapat berubah.
+              Harga dan Program Penjualan <strong>BYD Bandung</strong> tidak mengikat sewaktu-waktu dapat berubah.
             </p>
             <p style="font-size: 0.875rem; color: var(--muted); margin-top: 0.5rem;">
-              Harga BYD {cleanName} Bandung berlaku Per {model.hargaUpdate || 'TBD'}, untuk daerah Bandung & Jawa Barat.
+              Harga BYD {cleanName} Bandung berlaku Per {model.hargaUpdate || 'Terbaru'}, untuk daerah Bandung & Jawa Barat.
             </p>
           </div>
 
           <a class="btn accent" style="width: 100%; margin-top: 1rem;" href={waLink(waMsg)} target="_blank" rel="noopener">
-            💬 Tanya kami
+            💬 Tanya Promo & Test Drive
           </a>
         </div>
       </div>
 
       <!-- Tabs -->
       <div class="detail-tabs" id="tabs">
-        <div class="tabs-nav">
-          <button class="tab-btn active" data-tab="deskripsi">DESKRIPSI</button>
-          <button class="tab-btn" data-tab="spesifikasi">SPESIFIKASI</button>
-          <button class="tab-btn" data-tab="warna">WARNA</button>
-          <button class="tab-btn" data-tab="eksterior">EKSTERIOR</button>
-          <button class="tab-btn" data-tab="interior">INTERIOR</button>
-          <button class="tab-btn" data-tab="teknologi">TEKNOLOGI</button>
-          <button class="tab-btn" data-tab="brosur">BROSUR</button>
+        <div class="tabs-nav" role="tablist">
+          <button class="tab-btn active" data-tab="deskripsi" role="tab">DESKRIPSI</button>
+          <button class="tab-btn" data-tab="spesifikasi" role="tab">SPESIFIKASI</button>
+          <button class="tab-btn" data-tab="warna" role="tab">WARNA</button>
+          <button class="tab-btn" data-tab="eksterior" role="tab">EKSTERIOR</button>
+          <button class="tab-btn" data-tab="interior" role="tab">INTERIOR</button>
+          <button class="tab-btn" data-tab="teknologi" role="tab">TEKNOLOGI</button>
+          <button class="tab-btn" data-tab="brosur" role="tab">BROSUR</button>
         </div>
 
         <div class="tab-content">
+          <!-- TAB DESKRIPSI -->
           <div class="tab-pane active" id="tab-deskripsi">
-            <p>{model.deskripsi || model.tagline} ({model.category}, {powertrainLabels[model.powertrain]})</p>
-            <h3>Keunggulan</h3>
-            <ul>
-              {model.highlights.map((h) => <li>{h}</li>)}
-            </ul>
+            <h2 class="tab-h2">Deskripsi {model.name}</h2>
+            <p style="white-space: pre-line;">
+              {model.deskripsi || model.tagline} ({model.category}, {powertrainLabels[model.powertrain]})
+            </p>
+            {model.highlights?.length > 0 && (
+              <>
+                <h3>Keunggulan Utama {model.name}</h3>
+                <ul>
+                  {model.highlights.map((h) => <li>{h}</li>)}
+                </ul>
+              </>
+            )}
           </div>
 
+          <!-- TAB SPESIFIKASI -->
           <div class="tab-pane" id="tab-spesifikasi">
-            <table class="specs">
-              <tbody>
-                {model.specs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
-              </tbody>
-            </table>
+            <h2 class="tab-h2">Spesifikasi {model.name}</h2>
+            {model.specs?.length ? (
+              <table class="specs">
+                <tbody>
+                  {model.specs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
+                </tbody>
+              </table>
+            ) : <p class="empty">Data spesifikasi dalam proses update.</p>}
           </div>
 
+          <!-- TAB WARNA (Card Gambar + H3, Fallback List jika tanpa gambar) -->
           <div class="tab-pane" id="tab-warna">
-            {model.warna?.length ? (
-              <ul>
-                {model.warna.map((w) => <li>{w}</li>)}
-              </ul>
+            <h2 class="tab-h2">Pilihan Warna {model.name}</h2>
+            {warnaItems.length ? (
+              hasWarnaImages ? (
+                <div class="feature-grid">
+                  {warnaItems.map((w) => (
+                    <article class="feature-card">
+                      {w.gambar && (
+                        <div class="feature-media">
+                          <Pic src={w.gambar} alt={`${model.name} warna ${w.judul}`} width={480} />
+                        </div>
+                      )}
+                      <div class="feature-body">
+                        <h3 class="feature-h3">{w.judul}</h3>
+                        {w.deskripsi && <p>{w.deskripsi}</p>}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <ul class="feature-fallback-list">
+                  {warnaItems.map((w) => (
+                    <li>
+                      <h3 class="list-h3">{w.judul}</h3>
+                      {w.deskripsi && <p>{w.deskripsi}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )
             ) : <p class="empty">Data warna dalam proses update.</p>}
           </div>
 
+          <!-- TAB EKSTERIOR (Card Gambar + H3, Fallback List jika tanpa gambar) -->
           <div class="tab-pane" id="tab-eksterior">
-            {model.eksterior?.length ? (
-              <ul>
-                {model.eksterior.map((e) => <li>{e}</li>)}
-              </ul>
+            <h2 class="tab-h2">Eksterior {model.name}</h2>
+            {eksteriorItems.length ? (
+              hasEksteriorImages ? (
+                <div class="feature-grid">
+                  {eksteriorItems.map((e) => (
+                    <article class="feature-card">
+                      {e.gambar && (
+                        <div class="feature-media">
+                          <Pic src={e.gambar} alt={`${model.name} eksterior ${e.judul}`} width={480} />
+                        </div>
+                      )}
+                      <div class="feature-body">
+                        <h3 class="feature-h3">{e.judul}</h3>
+                        {e.deskripsi && <p>{e.deskripsi}</p>}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <ul class="feature-fallback-list">
+                  {eksteriorItems.map((e) => (
+                    <li>
+                      <h3 class="list-h3">{e.judul}</h3>
+                      {e.deskripsi && <p>{e.deskripsi}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )
             ) : <p class="empty">Data eksterior dalam proses update.</p>}
           </div>
 
+          <!-- TAB INTERIOR (Card Gambar + H3, Fallback List jika tanpa gambar) -->
           <div class="tab-pane" id="tab-interior">
-            {model.interior?.length ? (
-              <ul>
-                {model.interior.map((i) => <li>{i}</li>)}
-              </ul>
+            <h2 class="tab-h2">Interior {model.name}</h2>
+            {interiorItems.length ? (
+              hasInteriorImages ? (
+                <div class="feature-grid">
+                  {interiorItems.map((i) => (
+                    <article class="feature-card">
+                      {i.gambar && (
+                        <div class="feature-media">
+                          <Pic src={i.gambar} alt={`${model.name} interior ${i.judul}`} width={480} />
+                        </div>
+                      )}
+                      <div class="feature-body">
+                        <h3 class="feature-h3">{i.judul}</h3>
+                        {i.deskripsi && <p>{i.deskripsi}</p>}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <ul class="feature-fallback-list">
+                  {interiorItems.map((i) => (
+                    <li>
+                      <h3 class="list-h3">{i.judul}</h3>
+                      {i.deskripsi && <p>{i.deskripsi}</p>}
+                    </li>
+                  ))}
+                </ul>
+              )
             ) : <p class="empty">Data interior dalam proses update.</p>}
           </div>
 
+          <!-- TAB TEKNOLOGI -->
           <div class="tab-pane" id="tab-teknologi">
+            <h2 class="tab-h2">Teknologi {model.name}</h2>
             {model.teknologi?.length ? (
               <ul>
                 {model.teknologi.map((t) => <li>{t}</li>)}
@@ -187,10 +328,12 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
             ) : <p class="empty">Data teknologi dalam proses update.</p>}
           </div>
 
+          <!-- TAB BROSUR -->
           <div class="tab-pane" id="tab-brosur">
+            <h2 class="tab-h2">E-Brosur {model.name}</h2>
             {model.brosur ? (
               <>
-                <p>Unduh katalog resmi untuk spesifikasi lengkap.</p>
+                <p>Unduh katalog resmi {model.name} untuk spesifikasi lengkap.</p>
                 <a class="btn" href={model.brosur} download>Unduh E-Brosur</a>
               </>
             ) : <p class="empty">E-Brosur sedang disiapkan.</p>}
@@ -202,247 +345,148 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
 
   <section class="section" id="simulasi" style="background: var(--surface);">
     <div class="container">
-      <h2>Simulasi Kredit {model.name}</h2>
-      <KalkulatorKredit harga={model.hargaOTR} modelName={model.name} />
+      <h2>Simulasi Kredit {model.name} Bandung</h2>
+      <KalkulatorKredit harga={startPrice} modelName={model.name} />
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  /* -------- Breadcrumb -------- */
-  .breadcrumb {
-    font-size: 0.875rem;
-    color: var(--muted);
-    margin-bottom: 1rem;
-  }
-  .breadcrumb a {
-    text-decoration: none;
-  }
-  .breadcrumb a:hover {
-    text-decoration: underline;
-  }
+  .breadcrumb { font-size: 0.875rem; color: var(--muted); margin-bottom: 1rem; }
+  .breadcrumb a { text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
 
-  /* -------- Title -------- */
-  .detail-title {
-    text-align: center;
-    font-size: 1.5rem;
-    margin: 0.5rem 0 1.25rem;
-  }
-  @media (min-width: 768px) {
-    .detail-title { font-size: 2rem; margin: 1rem 0 2rem; }
-  }
+  .detail-title { text-align: center; font-size: 1.5rem; margin: 0.5rem 0 1.25rem; }
+  @media (min-width: 768px) { .detail-title { font-size: 2rem; margin: 1rem 0 2rem; } }
 
-  /* -------- 2-kolom: Galeri | Harga -------- */
-  .model-detail-layout {
-    display: grid;
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-  }
-  @media (min-width: 768px) {
-    .model-detail-layout {
-      grid-template-columns: 3fr 2fr;
-      gap: 2rem;
-    }
-  }
-  @media (min-width: 1080px) {
-    .model-detail-layout { grid-template-columns: 2fr 1fr; }
-  }
+  .model-detail-layout { display: grid; gap: 1.25rem; margin-bottom: 2rem; }
+  @media (min-width: 768px) { .model-detail-layout { grid-template-columns: 3fr 2fr; gap: 2rem; } }
+  @media (min-width: 1080px) { .model-detail-layout { grid-template-columns: 2fr 1fr; } }
 
   /* Slider */
-  .detail-gallery-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-width: 0;
-  }
+  .detail-gallery-wrap { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
   .detail-slider {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 10;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
+    position: relative; width: 100%; aspect-ratio: 16 / 10;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
   }
-  .gallery-slide {
-    display: none;
-    width: 100%;
-    height: 100%;
-  }
-  .gallery-slide.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .gallery-slide img,
-  .gallery-slide svg {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
+  .gallery-slide { display: none; width: 100%; height: 100%; }
+  .gallery-slide.active { display: flex; align-items: center; justify-content: center; }
+  .gallery-slide img, .gallery-slide svg { width: 100%; height: 100%; object-fit: contain; }
 
-  /* Thumbnails */
-  .detail-thumbs {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    padding-bottom: 2px;
-  }
+  .detail-thumbs { display: flex; gap: 0.5rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .detail-thumbs::-webkit-scrollbar { display: none; }
   .gallery-thumb {
-    flex-shrink: 0;
-    width: 72px;
-    height: 54px;
-    border: 2px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    cursor: pointer;
-    padding: 0;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-shrink: 0; width: 72px; height: 54px; border: 2px solid var(--border);
+    border-radius: 6px; background: var(--surface); cursor: pointer; padding: 0;
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
   }
-  @media (min-width: 768px) {
-    .gallery-thumb { width: 84px; height: 60px; }
-  }
-  .gallery-thumb.active {
-    border-color: var(--accent);
-  }
-  .gallery-thumb img,
-  .gallery-thumb svg {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
+  @media (min-width: 768px) { .gallery-thumb { width: 84px; height: 60px; } }
+  .gallery-thumb.active { border-color: var(--accent); }
+  .gallery-thumb img, .gallery-thumb svg { width: 100%; height: 100%; object-fit: contain; }
 
-  /* Harga */
-  .detail-price-box {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 1rem;
-  }
-  @media (min-width: 768px) {
-    .detail-price-box { padding: 1.5rem; }
-  }
-  .price-highlight {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 0.75rem;
-  }
-  .price-highlight .label {
-    font-size: 0.875rem;
-    color: var(--muted);
-  }
-  .price-highlight .value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--ink);
-    overflow-wrap: anywhere;
-  }
-  @media (min-width: 768px) {
-    .price-highlight .value { font-size: 1.75rem; }
-  }
-  .harga-update {
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-    font-style: italic;
-    color: var(--muted);
-  }
-  .price-table {
-    width: 100%;
-    min-width: 0; /* override min-width 520px dari global.css */
-    border-collapse: collapse;
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-  }
+  /* Harga Box */
+  .detail-price-box { background: var(--surface); border-radius: var(--radius); padding: 1rem; }
+  @media (min-width: 768px) { .detail-price-box { padding: 1.5rem; } }
+  .price-box-h2 { font-size: 1.15rem; margin: 0 0 0.75rem; color: var(--ink); }
+  .price-highlight { display: flex; flex-direction: column; margin-bottom: 0.5rem; }
+  .price-highlight .label { font-size: 0.875rem; color: var(--muted); }
+  .price-highlight .value { font-size: 1.4rem; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+  @media (min-width: 768px) { .price-highlight .value { font-size: 1.75rem; } }
+  .harga-update { font-size: 0.875rem; margin-bottom: 1rem; font-style: italic; color: var(--muted); }
+
+  .price-table { width: 100%; min-width: 0; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.875rem; }
   .price-table td:last-child { text-align: right; white-space: nowrap; }
-  .price-table th,
-  .price-table td {
-    padding: 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-  .price-table thead {
-    background: var(--ink-2);
-    color: #fff;
-  }
+  .price-table th, .price-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .price-table thead { background: var(--ink-2); color: #fff; }
 
-  /* -------- Tabs -------- */
-  .detail-tabs {
-    margin-top: 2rem;
-  }
+  /* Tabs */
+  .detail-tabs { margin-top: 2rem; }
   .tabs-nav {
-    display: flex;
-    gap: 0.25rem;
-    border-bottom: 2px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
+    display: flex; gap: 0.25rem; border-bottom: 2px solid var(--border);
+    overflow-x: auto; scrollbar-width: none;
     -webkit-mask-image: linear-gradient(90deg, #000 92%, transparent);
     mask-image: linear-gradient(90deg, #000 92%, transparent);
   }
   .tabs-nav::-webkit-scrollbar { display: none; }
-  @media (min-width: 768px) {
-    .tabs-nav {
-      gap: 0.5rem;
-      -webkit-mask-image: none;
-      mask-image: none;
-    }
-  }
+  @media (min-width: 768px) { .tabs-nav { gap: 0.5rem; -webkit-mask-image: none; mask-image: none; } }
   .tab-btn {
-    flex-shrink: 0;
-    padding: 0.75rem 0.75rem;
-    font-size: 0.8rem;
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    font-family: inherit;
-    font-weight: 600;
-    cursor: pointer;
-    transition: color 0.2s;
-    position: relative;
+    flex-shrink: 0; padding: 0.75rem 0.75rem; font-size: 0.8rem; border: none;
+    background: transparent; color: var(--muted); font-family: inherit;
+    font-weight: 600; cursor: pointer; transition: color 0.2s; position: relative;
   }
-  @media (min-width: 768px) {
-    .tab-btn { padding: 0.75rem 1rem; font-size: 1rem; }
+  @media (min-width: 768px) { .tab-btn { padding: 0.75rem 1rem; font-size: 1rem; } }
+  .tab-btn.active { color: var(--ink); }
+  .tab-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--accent); }
+
+  .tab-content { padding: 1.5rem 0; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .tab-h2 { font-size: 1.35rem; margin: 0 0 1rem; color: var(--ink); }
+
+  /* Feature Grid (Eksterior, Interior, Warna dengan gambar) */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
   }
-  .tab-btn.active {
+  @media (min-width: 640px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .feature-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .feature-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .feature-media {
+    aspect-ratio: 16 / 10;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .feature-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .feature-body {
+    padding: 1rem;
+  }
+  .feature-h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.4rem;
     color: var(--ink);
   }
-  .tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--accent);
-  }
-  .tab-content {
-    padding: 1.5rem 0;
-  }
-  .tab-pane {
-    display: none;
-  }
-  .tab-pane.active {
-    display: block;
+  .feature-body p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
   }
 
-  /* Specs table: stack label-nilai di layar sempit */
-  .specs {
-    width: 100%;
-    border-collapse: collapse;
+  /* Fallback List (jika tidak ada gambar) */
+  .feature-fallback-list {
+    padding-left: 1.25rem;
+    display: grid;
+    gap: 0.6rem;
   }
-  .specs th,
-  .specs td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-  .specs th {
-    width: 35%;
+  .list-h3 {
+    font-size: 1rem;
     font-weight: 600;
+    margin: 0;
+    display: inline;
   }
+  .feature-fallback-list p {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  /* Specs table */
+  .specs { width: 100%; border-collapse: collapse; }
+  .specs th, .specs td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .specs th { width: 35%; font-weight: 600; }
   @media (max-width: 480px) {
     .specs th, .specs td { display: block; width: 100%; }
     .specs th { padding-bottom: 0; border-bottom: 0; color: var(--muted); font-size: 0.85rem; }
@@ -451,7 +495,6 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
 </style>
 
 <script>
-  // Slider
   const slider = document.getElementById('mainSlider');
   const thumbs = document.getElementById('thumbs');
   if (slider && thumbs) {
@@ -461,16 +504,11 @@ const waMsg = `Halo, saya ingin test drive ${model.name}.`;
       const btn = e.target.closest('.gallery-thumb');
       if (!btn) return;
       const idx = parseInt(btn.getAttribute('data-index') || '0', 10);
-      slides.forEach((s, i) => {
-        s.classList.toggle('active', i === idx);
-      });
-      buttons.forEach((b, i) => {
-        b.classList.toggle('active', i === idx);
-      });
+      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+      buttons.forEach((b, i) => b.classList.toggle('active', i === idx));
     });
   }
 
-  // Tabs
   const tabsEl = document.getElementById('tabs');
   if (tabsEl) {
     const nav = tabsEl.querySelector('.tabs-nav');
