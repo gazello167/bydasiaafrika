@@ -328,16 +328,54 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung
             ) : <p class="empty">Data teknologi dalam proses update.</p>}
           </div>
 
-          <!-- TAB BROSUR -->
+          <!-- TAB BROSUR (Interactive PDF Embed) -->
           <div class="tab-pane" id="tab-brosur">
             <h2 class="tab-h2">E-Brosur {model.name}</h2>
             {model.brosur ? (
-              <>
-                <p>Unduh katalog resmi {model.name} untuk spesifikasi lengkap.</p>
-                <a class="btn" href={model.brosur} download>Unduh E-Brosur</a>
-              </>
-            ) : <p class="empty">E-Brosur sedang disiapkan.</p>}
+              <div class="brosur-viewer-wrap">
+                <div class="brosur-toolbar">
+                  <div class="brosur-info">
+                    <strong>📄 Katalog Resmi {model.name} (PDF)</strong>
+                    <span>Gunakan kontrol di bawah untuk memperbesar (zoom), menggeser halaman, atau mencetak brosur.</span>
+                  </div>
+                  <div class="brosur-actions">
+                    <a
+                      class="btn secondary"
+                      href={model.brosur}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      🔍 Layar Penuh
+                    </a>
+                    <a
+                      class="btn accent"
+                      href={model.brosur}
+                      download
+                    >
+                      ⬇️ Unduh PDF
+                    </a>
+                  </div>
+                </div>
+
+                <div class="brosur-frame-box">
+                  <iframe
+                    id="brosurIframe"
+                    data-src={`${model.brosur}#view=FitH&toolbar=1&navpanes=0`}
+                    title={`E-Brosur ${model.name} Bandung`}
+                    loading="lazy"
+                  ></iframe>
+                </div>
+
+                <p class="brosur-mobile-hint">
+                  Tidak tampil di layar HP Anda? <a href={model.brosur} target="_blank" rel="noopener">Ketuk di sini untuk membuka E-Brosur {model.name}</a>.
+                </p>
+              </div>
+            ) : (
+              <p class="empty">E-Brosur {model.name} sedang disiapkan.</p>
+            )}
           </div>
+
+
         </div>
       </div>
     </div>
@@ -492,6 +530,62 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung
     .specs th { padding-bottom: 0; border-bottom: 0; color: var(--muted); font-size: 0.85rem; }
     .specs td { padding-top: 2px; }
   }
+
+  /* Interactive E-Brosur Embed */
+  .brosur-viewer-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .brosur-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .brosur-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+  .brosur-info span {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .brosur-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .brosur-frame-box {
+    width: 100%;
+    height: 520px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #525659;
+  }
+  @media (min-width: 768px) {
+    .brosur-frame-box {
+      height: 760px;
+    }
+  }
+  .brosur-frame-box iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .brosur-mobile-hint {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
+  }
 </style>
 
 <script>
@@ -523,6 +617,15 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung
         btn.classList.add('active');
         const pane = tabsEl.querySelector('#tab-' + tab);
         if (pane) pane.classList.add('active');
+
+        // Lazy-load PDF iframe hanya saat tab brosur dibuka
+        if (tab === 'brosur') {
+          const iframe = document.getElementById('brosurIframe');
+          if (iframe && !iframe.getAttribute('src')) {
+            const pdfSrc = iframe.getAttribute('data-src');
+            if (pdfSrc) iframe.setAttribute('src', pdfSrc);
+          }
+        }
       });
     }
   }
