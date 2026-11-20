@@ -32,6 +32,7 @@ body {
 img, svg { max-width: 100%; }
 img { height: auto; display: block; }
 a { color: inherit; }
+strong { font-weight: bold; }
 h1, h2, h3 { line-height: 1.2; }
 /* Cincin dua warna: terlihat di latar putih (ink) maupun gelap (lime) */
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; box-shadow: 0 0 0 2px var(--ink); }
