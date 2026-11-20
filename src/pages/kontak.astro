@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { site, waLink } from '../data/site';
+
+const dealerImg = 'https://byd.gazello.my.id/images/dealer-byd-asia-afrika-bandung.webp';
 ---
 <BaseLayout
   title="Kontak & Lokasi | Dealer BYD Asia Afrika Bandung"
@@ -8,30 +10,53 @@ import { site, waLink } from '../data/site';
 >
   <section class="section">
     <div class="container">
-      <h1>Kontak & Lokasi</h1>
-      <address style="font-style: normal;">
-        <strong>{site.name}</strong><br />
-        {site.address.street}, {site.address.city}, {site.address.region} {site.address.postalCode}<br />
-        Telp: <a href={`tel:${site.phone}`}>{site.phone}</a><br />
-        Email: <a href={`mailto:${site.email}`}>{site.email}</a>
-      </address>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Beranda</a> / Kontak & Lokasi
+      </nav>
 
-      <h2>Jam Buka</h2>
-      <ul>
-        <li>Senin - Sabtu: 09.00 - 18.00</li>
-        <li>Minggu: 10.00 - 16.00</li>
-      </ul>
+      <div class="contact-top">
+        <!-- Kolom Kiri (Desktop) / Atas (Mobile): Info Kontak & Jam Buka -->
+        <div class="contact-info">
+          <h1 class="page-title">Kontak & Lokasi</h1>
+          <address style="font-style: normal; margin-top: 12px;">
+            <strong>{site.name}</strong><br />
+            {site.address.street}, {site.address.city}, {site.address.region} {site.address.postalCode}<br />
+            Telp: <a href={`tel:${site.phone}`}>{site.phone}</a><br />
+            Email: <a href={`mailto:${site.email}`}>{site.email}</a>
+          </address>
 
-      <a class="btn" href={waLink('Halo, saya ingin tanya info showroom.')} target="_blank" rel="noopener">Chat WhatsApp</a>
+          <h2 style="margin-top: 20px; font-size: 1.2rem;">Jam Buka</h2>
+          <ul style="margin-bottom: 20px;">
+            <li>Senin - Sabtu: 09.00 - 18.00</li>
+            <li>Minggu: 10.00 - 16.00</li>
+          </ul>
 
+          <a class="btn accent" href={waLink('Halo, saya ingin tanya info showroom.')} target="_blank" rel="noopener">
+            💬 Chat WhatsApp
+          </a>
+        </div>
+
+        <!-- Kolom Kanan (Desktop) / Sebelum Map (Mobile): Foto Showroom Dealer -->
+        <div class="contact-photo">
+          <img
+            src={dealerImg}
+            alt="Showroom Dealer BYD Asia Afrika Bandung"
+            width="640"
+            height="420"
+            loading="eager"
+          />
+        </div>
+      </div>
+
+      <!-- Google Maps (Bawah) -->
       {site.mapsEmbedUrl && (
-        <div style="margin-top: 24px;">
+        <div class="contact-map">
           <iframe
             src={site.mapsEmbedUrl}
             title="Lokasi dealer di Google Maps"
             width="100%"
-            height="360"
-            style="border:0;"
+            height="380"
+            style="border:0; display: block;"
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
           ></iframe>
@@ -40,3 +65,40 @@ import { site, waLink } from '../data/site';
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .contact-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    align-items: center;
+  }
+  @media (min-width: 768px) {
+    .contact-top {
+      grid-template-columns: 1fr 1.15fr;
+      gap: 32px;
+    }
+  }
+
+  .contact-photo {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  .contact-photo img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    display: block;
+  }
+
+  .contact-map {
+    margin-top: 28px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+</style>
