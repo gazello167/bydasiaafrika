@@ -1,5 +1,4 @@
-// "Database" model mobil. File ini DITULIS ULANG oleh CMS PHP (admin/api/models.php)
-// setiap kali ada perubahan di panel admin. Jangan edit manual di repo.
+// File ini DITULIS ULANG oleh CMS (admin/api/models.php). Jangan edit manual.
 export type Category = 'MPV' | 'SUV' | 'Sedan' | 'Citycar';
 export type Powertrain = 'BEV' | 'PHEV';
 
@@ -15,6 +14,12 @@ export interface CarVariant {
   harga: number | null;
 }
 
+export interface FeatureItem {
+  judul: string;
+  gambar?: string;
+  deskripsi?: string;
+}
+
 export interface CarModel {
   slug: string;
   name: string;
@@ -27,88 +32,22 @@ export interface CarModel {
   highlights: string[];
   image?: string;
   brosur?: string;
-  // --- Detail page (semua opsional, ada fallback) ---
   deskripsi?: string;
+  metaTitle?: string;
+  metaDesc?: string;
+  focusKeyword?: string;
   gallery?: string[];
   variants?: CarVariant[];
   hargaUpdate?: string;
-  warna?: string[];
-  eksterior?: string[];
-  interior?: string[];
+  hargaH2?: string;
+  warna?: (string | FeatureItem)[];
+  eksterior?: (string | FeatureItem)[];
+  interior?: (string | FeatureItem)[];
   teknologi?: string[];
+  cardImage?: string;
 }
 
-// Default/fallback bila CMS belum mengisi data (placeholder).
-const todoSpecs = (tipe: string) => [
-  { label: 'Tipe', value: tipe },
-  { label: 'Kapasitas baterai', value: 'TODO' },
-  { label: 'Jarak tempuh', value: 'TODO' },
-  { label: 'Kapasitas penumpang', value: 'TODO' },
-];
-const todoHighlights = ['Keunggulan 1 (TODO)', 'Keunggulan 2 (TODO)', 'Keunggulan 3 (TODO)'];
-
 export const models: CarModel[] = [
-  {
-    slug: 'm6',
-    name: 'BYD M6',
-    category: 'MPV',
-    powertrain: 'BEV',
-    isNew: true,
-    tagline: 'MPV listrik untuk keluarga besar.',
-    hargaOTR: null,
-    specs: todoSpecs('MPV Listrik'),
-    highlights: todoHighlights,
-  },
-  {
-    slug: 'atto-3',
-    name: 'BYD Atto 3',
-    category: 'SUV',
-    powertrain: 'BEV',
-    tagline: 'SUV listrik kompak untuk keluarga.',
-    hargaOTR: null,
-    specs: todoSpecs('SUV Listrik'),
-    highlights: todoHighlights,
-  },
-  {
-    slug: 'sealion-7',
-    name: 'BYD Sealion 7',
-    category: 'SUV',
-    powertrain: 'BEV',
-    tagline: 'SUV listrik premium.',
-    hargaOTR: null,
-    specs: todoSpecs('SUV Listrik'),
-    highlights: todoHighlights,
-  },
-  {
-    slug: 'sealion-6-dm-i',
-    name: 'BYD Sealion 6 DM-i',
-    category: 'SUV',
-    powertrain: 'PHEV',
-    tagline: 'SUV plug-in hybrid.',
-    hargaOTR: null,
-    specs: todoSpecs('SUV Plug-in Hybrid'),
-    highlights: todoHighlights,
-  },
-  {
-    slug: 'seal',
-    name: 'BYD Seal',
-    category: 'Sedan',
-    powertrain: 'BEV',
-    tagline: 'Sedan listrik performa tinggi.',
-    hargaOTR: null,
-    specs: todoSpecs('Sedan Listrik'),
-    highlights: todoHighlights,
-  },
-  {
-    slug: 'dolphin',
-    name: 'BYD Dolphin',
-    category: 'Citycar',
-    powertrain: 'BEV',
-    tagline: 'Hatchback listrik lincah untuk perkotaan.',
-    hargaOTR: null,
-    specs: todoSpecs('Hatchback Listrik'),
-    highlights: todoHighlights,
-  },
   {
     slug: 'atto-1',
     name: 'BYD Atto 1',
@@ -116,10 +55,112 @@ export const models: CarModel[] = [
     powertrain: 'BEV',
     isNew: true,
     tagline: 'Citycar listrik yang ringkas dan irit.',
-    hargaOTR: null,
-    specs: todoSpecs('Citycar Listrik'),
-    highlights: todoHighlights,
+    hargaOTR: 205000000,
+    specs: [],
+    highlights: [],
+    image: 'https://byd.gazello.my.id/models/6afd878eb2f4d-1795000206.jpg',
+    brosur: 'https://byd.gazello.my.id/brosur/6afff063784c3-1795158115.pdf',
+    deskripsi: 'BYD Atto 1 dilengkapi dengan sejumlah fitur penting untuk kendaraan masa kini. Pada bagian keselamatan, mobil ini memiliki airbag depan, rem cakram di keempat roda, sistem ABS (Anti-lock Braking System), EBD, dan electronic stability control. Sensor parkir belakang dan kamera mundur juga tersedia sebagai standar.\n\nSistem hiburan dilengkapi layar sentuh yang terintegrasi dengan konektivitas Bluetooth dan USB. Beberapa varian sudah mendukung koneksi Android Auto dan Apple CarPlay.',
+    hargaUpdate: 'Update November 2026',
+    hargaH2: 'Harga BYD Atto 1 Bandung',
+    gallery: ['https://byd.gazello.my.id/wp-content/uploads/2025/08/BYD-Atto-1-activity-4.webp', 'https://byd.gazello.my.id/wp-content/uploads/2025/08/BYD-Atto-1-activity-6.webp', 'https://byd.gazello.my.id/wp-content/uploads/2025/08/BYD-Atto-1-activity-7.webp'],
+    warna: [{ judul: 'Sprout Green' }, { judul: 'Apricity White' }, { judul: 'Cosmos Black' }],
+    eksterior: [{ judul: 'Pencahayaan Dinamis', deskripsi: 'Lampu depan dengan desain \'Double Slash\' memberikan identitas visual kuat dan pencahayaan optimal di siang hari, dilengkapi dengan fitur automatic LED headlamp untuk kenyamanan dan keamanan.' }, { judul: 'Velg Alloy 16 Inci', deskripsi: 'Velg berukuran 16 inci melengkapi tampilan dinamis BYD Atto 1, menambah kesan sporty dan stabil.' }],
+    interior: [{ judul: 'Pengisian Daya Nirkabel yang Praktis', deskripsi: 'Nikmati kemudahan pengisian daya perangkat seluler tanpa kabel, menjaga kabin tetap rapi dan tetap terhubung sepanjang perjalanan.' }],
+    variants: [{ tipe: 'Premium', harga: 251000000 }, { tipe: 'Dynamic', harga: 246000000 }, { tipe: 'Standar', harga: 205000000 }],
   },
+  {
+    slug: 'm6',
+    name: 'BYD M6',
+    category: 'MPV',
+    powertrain: 'BEV',
+    
+    tagline: 'MPV listrik untuk keluarga besar.',
+    hargaOTR: null,
+    specs: [],
+    highlights: [],
+    image: 'https://byd.gazello.my.id/models/6afdac8d72155-1795009677.jpg',
+    
+  },
+  {
+    slug: 'atto-3',
+    name: 'BYD Atto 3',
+    category: 'SUV',
+    powertrain: 'BEV',
+    
+    tagline: 'SUV listrik kompak untuk keluarga.',
+    hargaOTR: 421000003,
+    specs: [],
+    highlights: ['BYD ATTO 3 adalah mobil SUV crossover listrik, menggunakan platform BYD e-platform 3.0 dan dikenal dengan baterai Blade Battery yang diklaim aman dan tahan lama.'],
+    image: 'https://byd.gazello.my.id/models/6afd666dec8f1-1794991725.webp',
+    
+    gallery: ['https://byd.gazello.my.id/wp-content/uploads/2025/07/byd-atto3-c.webp', 'https://byd.gazello.my.id/wp-content/uploads/2025/08/depan-atto3.webp', 'https://byd.gazello.my.id/wp-content/uploads/2025/08/byd-atto-3-interior.webp'],
+  },
+  {
+    slug: 'm6-dm',
+    name: 'BYD M6 DM',
+    category: 'MPV',
+    powertrain: 'PHEV',
+    isNew: true,
+    tagline: 'MPV plug-in hybrid.',
+    hargaOTR: null,
+    specs: [],
+    highlights: [],
+    
+    
+  },
+  {
+    slug: 'sealion-7',
+    name: 'BYD Sealion 7',
+    category: 'SUV',
+    powertrain: 'BEV',
+    
+    tagline: 'SUV listrik premium.',
+    hargaOTR: null,
+    specs: [],
+    highlights: [],
+    
+    
+  },
+  {
+    slug: 'seal',
+    name: 'BYD Seal',
+    category: 'Sedan',
+    powertrain: 'BEV',
+    
+    tagline: 'Sedan listrik performa tinggi.',
+    hargaOTR: null,
+    specs: [],
+    highlights: [],
+    
+    
+  },
+  {
+    slug: 'dolphin',
+    name: 'BYD Dolphin',
+    category: 'Citycar',
+    powertrain: 'BEV',
+    
+    tagline: 'Hatchback listrik lincah untuk perkotaan.',
+    hargaOTR: null,
+    specs: [],
+    highlights: [],
+    
+    
+  },
+  {
+    slug: 'titan-7-dm',
+    name: 'BYD TiTAN 7 DM',
+    category: 'SUV',
+    powertrain: 'PHEV',
+    isNew: true,
+    tagline: 'SUV plug-in hybrid.',
+    hargaOTR: null,
+    specs: [{ label: 'Tipe', value: '' }, { label: 'Kapasitas baterai', value: '' }],
+    highlights: [],
+    
+    
+  }
 ];
 
 export const activeCategories = categoryOrder.filter((c) => models.some((m) => m.category === c));
