@@ -192,8 +192,41 @@ const defaultWaMsg = waText || 'Halo, saya ingin tanya info promo & harga mobil 
   }
 
   .fab-wa {
+    position: relative;
     background: #25d366;
     color: #fff;
+  }
+
+  /* Dot merah notifikasi di pojok kanan atas ikon WA */
+  .fab-wa::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.55);
+    animation: waPulseDot 2s infinite;
+  }
+
+  @keyframes waPulseDot {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65);
+    }
+    50% {
+      transform: scale(1.12);
+      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fab-wa::after {
+      animation: none;
+    }
   }
 
   /* Menu Slide-Up */
