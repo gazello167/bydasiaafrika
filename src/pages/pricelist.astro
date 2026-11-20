@@ -1,44 +1,102 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { models, categoryOrder, formatRupiah, powertrainLabels } from '../data/models';
+import { waLink } from '../data/site';
 
 const sorted = [...models].sort(
   (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category),
 );
+
+const latestUpdate = models.find((m) => m.hargaUpdate)?.hargaUpdate;
 ---
 <BaseLayout
   title="Pricelist Mobil BYD Bandung | Dealer BYD Asia Afrika"
-  description="Daftar harga mobil BYD di dealer Asia Afrika Bandung, per model dan kategori. Hubungi kami untuk harga dan promo terbaru."
+  description="Daftar harga mobil BYD di dealer Asia Afrika Bandung, per model, tipe/varian, dan kategori. Hubungi kami untuk harga dan promo terbaru."
 >
   <section class="section">
     <div class="container">
-      <h1 class="page-title">Pricelist BYD</h1>
-      <p class="note">Harga OTR Bandung. Harga dan promo dapat berubah sewaktu-waktu.</p>
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Beranda</a> / Pricelist
+      </nav>
 
-      <div class="table-wrap">
+      <h1 class="page-title">Pricelist BYD Bandung</h1>
+      <p class="note">
+        Harga OTR Bandung & Jawa Barat{latestUpdate ? ` • Periode: ${latestUpdate}` : ''}. Harga dan promo dapat berubah sewaktu-waktu.
+      </p>
+
+      <div class="table-wrap" style="margin-top: 20px;">
         <table class="price-table">
           <thead>
             <tr>
               <th scope="col">Model</th>
+              <th scope="col">Tipe / Varian</th>
               <th scope="col">Kategori</th>
               <th scope="col">Penggerak</th>
-              <th scope="col">Harga OTR</th>
-              <th scope="col"><span class="sr-only">Aksi</span></th>
+              <th scope="col" style="text-align: right;">Harga OTR</th>
+              <th scope="col" style="text-align: right;">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            {sorted.map((m) => (
-              <tr>
-                <th scope="row"><a href={`/model/${m.slug}`}>{m.name}</a></th>
-                <td>{m.category}</td>
-                <td>{powertrainLabels[m.powertrain]}</td>
-                <td>{m.hargaOTR ? formatRupiah(m.hargaOTR) : 'Hubungi kami'}</td>
-                <td><a href={`/model/${m.slug}#simulasi`}>Simulasi kredit</a></td>
-              </tr>
-            ))}
+            {sorted.map((m) => {
+              const variants = m.variants?.length
+                ? m.variants
+                : [{ tipe: 'Standard', harga: m.hargaOTR }];
+              const cleanName = m.name.replace(/^BYD\s+/i, '');
+
+              return variants.map((v, idx) => (
+                <tr>
+                  {idx === 0 && (
+                    <th scope="row" rowspan={variants.length} style="vertical-align: top;">
+                      <a href={`/model/${m.slug}`}>{m.name}</a>
+                      {m.isNew && <span class="pl-badge-new">NEW</span>}
+                      {m.hargaUpdate && (
+                        <div class="pl-update">{m.hargaUpdate}</div>
+                      )}
+                    </th>
+                  )}
+                  <td>{v.tipe}</td>
+                  <td>{m.category}</td>
+                  <td>{powertrainLabels[m.powertrain]}</td>
+                  <td style="text-align: right; font-weight: 700; white-space: nowrap;">
+                    {v.harga ? formatRupiah(v.harga) : 'Hubungi kami'}
+                  </td>
+                  <td style="text-align: right; white-space: nowrap;">
+                    <a href={`/model/${m.slug}#simulasi`}>Simulasi</a>
+                    {' · '}
+                    <a
+                      href={waLink(`Halo, saya ingin info promo & kredit BYD ${cleanName} tipe ${v.tipe}.`)}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Tanya WA
+                    </a>
+                  </td>
+                </tr>
+              ));
+            })}
           </tbody>
         </table>
       </div>
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .pl-badge-new {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.7rem;
+    font-weight: 800;
+    vertical-align: middle;
+  }
+  .pl-update {
+    margin-top: 4px;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--muted);
+  }
+</style>
