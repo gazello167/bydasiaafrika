@@ -3,7 +3,7 @@ import type { IconName } from '../lib/icons';
 export const mainNav = [
   { label: 'Home', href: '/' },
   { label: 'Model', href: '/model' },
-  { label: 'Simulasi Kredit', href: '/kalkulator-kredit' },
+  { label: 'Pricelist', href: '/pricelist' },
   { label: 'Test Drive', href: '/test-drive' },
   { label: 'Berita', href: '/berita' },
   { label: 'Kontak', href: '/kontak' },

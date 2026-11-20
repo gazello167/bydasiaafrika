@@ -11,6 +11,11 @@ export function getStaticPaths() {
 
 const { model } = Astro.props;
 const cleanName = model.name.replace(/^BYD\s+/i, '');
+// Ambil semua model lain selain yang sedang dibuka
+const otherModels = models.filter((m) => m.slug !== model.slug);
+// Format nomor telepon untuk href="tel:..."
+const rawPhone = (site.phone || site.whatsapp || '').replace(/[^0-9+]/g, '');
+const telHref = rawPhone.startsWith('0') ? `tel:+62${rawPhone.slice(1)}` : `tel:${rawPhone}`;
 
 const galleryList = model.gallery?.length ? model.gallery : [model.image].filter(Boolean);
 const variantList = model.variants?.length
@@ -85,12 +90,13 @@ const productSchema = {
     : {}),
 };
 
-const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung.`;
+const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
 ---
 
 <BaseLayout
   title={seoTitle}
   description={seoDesc}
+  waText={waMsg}
   schema={productSchema}
 >
   {model.focusKeyword && (
@@ -387,6 +393,57 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung
       <KalkulatorKredit harga={startPrice} modelName={model.name} />
     </div>
   </section>
+
+  <!-- Model BYD Lainnya -->
+  {otherModels.length > 0 && (
+    <section class="section" id="model-lainnya">
+      <div class="container">
+        <h2 class="section-title">Model BYD Lainnya</h2>
+        <p class="section-sub">Jelajahi pilihan mobil listrik BYD lainnya di Bandung</p>
+
+        <div class="other-models-grid">
+          {otherModels.map((item) => {
+            const itemPrices = (item.variants || [])
+              .map((v) => v.harga)
+              .filter((h): h is number => typeof h === 'number' && h > 0);
+            const itemStartPrice = item.hargaOTR || (itemPrices.length ? Math.min(...itemPrices) : null);
+
+            return (
+              <article class="other-card">
+                {item.isNew && <span class="badge-new">NEW!</span>}
+
+                <div class="other-media">
+                  <Pic src={item.image} alt={item.name} width={420} fallback="car" />
+                </div>
+
+                <div class="other-info">
+                  <h3>
+                    <a href={`/model/${item.slug}`}>{item.name.replaceAll('-', '‑')}</a>
+                  </h3>
+                  <p class="price-label">Mulai Dari</p>
+                  <p class="price">{itemStartPrice ? formatRupiah(itemStartPrice) : 'Hubungi kami'}</p>
+                  <ul class="tags">
+                    <li>{item.category}</li>
+                  </ul>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Lightbox Modal -->
+  <div class="lightbox" id="galleryLightbox" role="dialog" aria-modal="true" aria-label={`Galeri ${model.name}`} hidden>
+    <button type="button" class="lb-close" id="lbClose" aria-label="Tutup">&times;</button>
+    <button type="button" class="lb-nav lb-prev" id="lbPrev" aria-label="Gambar sebelumnya">&#10094;</button>
+    <div class="lb-stage" id="lbStage">
+      <img id="lbImg" src="" alt={model.name} />
+      <div class="lb-caption" id="lbCaption"></div>
+    </div>
+    <button type="button" class="lb-nav lb-next" id="lbNext" aria-label="Gambar berikutnya">&#10095;</button>
+  </div>
 </BaseLayout>
 
 <style>
@@ -586,20 +643,297 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName} Bandung
     color: var(--muted);
     margin: 0;
   }
+
+  /* Kursor zoom pada gambar utama slider */
+  .gallery-slide.active img {
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+  }
+  .gallery-slide.active:hover img {
+    transform: scale(1.015);
+  }
+
+  /* Lightbox Overlay */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(15, 17, 21, 0.92);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lb-stage {
+    max-width: 92vw;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .lb-stage img {
+    max-width: 92vw;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    user-select: none;
+  }
+  .lb-caption {
+    color: #e5e7eb;
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  .lb-close {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 10001;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .lb-close:hover {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .lb-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10001;
+    width: 46px;
+    height: 46px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .lb-nav:hover {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+  .lb-prev { left: 16px; }
+  .lb-next { right: 16px; }
+  .lb-nav[hidden] { display: none; }
+
+  /* -------- Model Lainnya (2 kolom mobile, 3 kolom desktop) -------- */
+  .other-models-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+  }
+  @media (min-width: 960px) {
+    .other-models-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+  }
+
+  .other-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  @media (min-width: 960px) {
+    .other-card {
+      display: grid;
+      grid-template-columns: 1fr 48%;
+      align-items: center;
+      gap: 10px;
+      padding: 20px;
+    }
+    .other-card .other-media {
+      order: 2;
+    }
+    .other-card .other-info {
+      order: 1;
+    }
+  }
+  .other-card:hover,
+  .other-card:focus-within {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+  .other-media {
+    aspect-ratio: 16 / 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+  @media (min-width: 960px) {
+    .other-media {
+      margin-bottom: 0;
+    }
+  }
+  .other-media img,
+  .other-media svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .other-info h3 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+  }
+  @media (min-width: 960px) {
+    .other-info h3 {
+      font-size: 1.15rem;
+    }
+  }
+  .other-info h3 a {
+    text-decoration: none;
+  }
+  .other-info h3 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+  }
+  .other-info .price-label {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .other-info .price {
+    margin: 0 0 8px;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+  @media (min-width: 960px) {
+    .other-info .price {
+      font-size: 1rem;
+    }
+  }
 </style>
 
 <script>
+  // Slider + Lightbox
   const slider = document.getElementById('mainSlider');
   const thumbs = document.getElementById('thumbs');
-  if (slider && thumbs) {
-    const slides = slider.querySelectorAll('.gallery-slide');
-    const buttons = thumbs.querySelectorAll('.gallery-thumb');
-    thumbs.addEventListener('click', (e) => {
-      const btn = e.target.closest('.gallery-thumb');
-      if (!btn) return;
-      const idx = parseInt(btn.getAttribute('data-index') || '0', 10);
-      slides.forEach((s, i) => s.classList.toggle('active', i === idx));
-      buttons.forEach((b, i) => b.classList.toggle('active', i === idx));
+  const lightbox = document.getElementById('galleryLightbox');
+  const lbImg = document.getElementById('lbImg');
+  const lbCaption = document.getElementById('lbCaption');
+  const lbClose = document.getElementById('lbClose');
+  const lbPrev = document.getElementById('lbPrev');
+  const lbNext = document.getElementById('lbNext');
+
+  if (slider) {
+    const slides = Array.from(slider.querySelectorAll('.gallery-slide'));
+    const buttons = thumbs ? Array.from(thumbs.querySelectorAll('.gallery-thumb')) : [];
+    let currentIdx = 0;
+
+    const setActiveSlide = (idx) => {
+      currentIdx = (idx + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('active', i === currentIdx));
+      buttons.forEach((b, i) => b.classList.toggle('active', i === currentIdx));
+    };
+
+    if (thumbs) {
+      thumbs.addEventListener('click', (e) => {
+        const btn = e.target.closest('.gallery-thumb');
+        if (!btn) return;
+        const idx = parseInt(btn.getAttribute('data-index') || '0', 10);
+        setActiveSlide(idx);
+      });
+    }
+
+    const updateLightbox = () => {
+      if (!lightbox || !lbImg) return;
+      const activeImg = slides[currentIdx]?.querySelector('img');
+      if (!activeImg) return;
+      lbImg.src = activeImg.currentSrc || activeImg.src;
+      lbImg.alt = activeImg.alt || '';
+      if (lbCaption) {
+        lbCaption.textContent = `${activeImg.alt || ''} (${currentIdx + 1} / ${slides.length})`;
+      }
+      const single = slides.length <= 1;
+      if (lbPrev) lbPrev.hidden = single;
+      if (lbNext) lbNext.hidden = single;
+    };
+
+    const openLightbox = () => {
+      if (!lightbox) return;
+      updateLightbox();
+      lightbox.hidden = false;
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = () => {
+      if (!lightbox) return;
+      lightbox.hidden = true;
+      document.body.style.overflow = '';
+    };
+
+    // Klik pada gambar aktif di slider -> buka Lightbox
+    slider.addEventListener('click', (e) => {
+      const clickedImg = e.target.closest('.gallery-slide.active img');
+      if (clickedImg) openLightbox();
+    });
+
+    if (lbClose) lbClose.addEventListener('click', closeLightbox);
+    if (lbPrev) {
+      lbPrev.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveSlide(currentIdx - 1);
+        updateLightbox();
+      });
+    }
+    if (lbNext) {
+      lbNext.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setActiveSlide(currentIdx + 1);
+        updateLightbox();
+      });
+    }
+
+    // Klik backdrop gelap -> tutup
+    if (lightbox) {
+      lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+      });
+    }
+
+    // Navigasi keyboard (Esc, Panah Kiri/Kanan)
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox || lightbox.hidden) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft' && slides.length > 1) {
+        setActiveSlide(currentIdx - 1);
+        updateLightbox();
+      }
+      if (e.key === 'ArrowRight' && slides.length > 1) {
+        setActiveSlide(currentIdx + 1);
+        updateLightbox();
+      }
     });
   }
 
