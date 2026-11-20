@@ -24,7 +24,7 @@ export const topics: Topic[] = [
   { slug: 'atto-3', label: 'BYD Atto 3', modelSlug: 'atto-3', description: 'Semua tentang BYD Atto 3: harga, spesifikasi, dan pengalaman berkendara.' },
   { slug: 'seal', label: 'BYD Seal', modelSlug: 'seal', description: 'Semua tentang BYD Seal: performa, fitur, dan perbandingan.' },
   { slug: 'm6', label: 'BYD M6', modelSlug: 'm6', description: 'Semua tentang BYD M6: MPV listrik keluarga, harga, dan fitur.' },
-  { slug: 'm6dm', label: 'BYD M6 DM-i', description: 'Semua tentang BYD M6 DM-i: MPV plug-in hybrid untuk keluarga.' },
+  { slug: 'm6dm', label: 'BYD M6 DM', description: 'Semua tentang BYD M6 DM: MPV plug-in hybrid untuk keluarga.' },
   { slug: 'dolphin', label: 'BYD Dolphin', modelSlug: 'dolphin', description: 'Semua tentang BYD Dolphin: hatchback listrik perkotaan.' },
   { slug: 'sealion-7', label: 'BYD Sealion 7', modelSlug: 'sealion-7', description: 'Semua tentang BYD Sealion 7: SUV listrik premium.' },
   { slug: 'insight', label: 'Insight', description: 'Panduan mobil listrik: charging, pajak, perawatan, dan tips.' },
