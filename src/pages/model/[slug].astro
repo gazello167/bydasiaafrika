@@ -231,9 +231,21 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
           <!-- TAB DESKRIPSI -->
           <div class="tab-pane active" id="tab-deskripsi">
             <h2 class="tab-h2">Deskripsi {model.name}</h2>
-            <p style="white-space: pre-line;">
-              {model.deskripsi || model.tagline} ({model.category}, {powertrainLabels[model.powertrain]})
-            </p>
+            {model.deskripsi ? (
+              model.deskripsi
+                .split(/\n{2,}/)
+                .filter((p) => p.trim())
+                .map((p, idx, arr) => (
+                  <p style="white-space: pre-line;">
+                    <Fragment set:html={formatDeskripsi(p.trim())} />
+                    {idx === arr.length - 1 && ` (${model.category}, ${powertrainLabels[model.powertrain]})`}
+                  </p>
+                ))
+            ) : (
+              <p>
+                <Fragment set:html={formatDeskripsi(model.tagline)} /> ({model.category}, {powertrainLabels[model.powertrain]})
+              </p>
+            )}
             {model.highlights?.length > 0 && (
               <>
                 <h3>Keunggulan Utama {model.name}</h3>
@@ -444,7 +456,7 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
                 {item.isNew && <span class="badge-new">NEW!</span>}
 
                 <div class="other-media">
-                  <Pic src={item.image} alt={item.name} width={420} fallback="car" />
+                  <Pic src={item.cardImage || item.image} alt={item.name} width={420} fallback="car" />
                 </div>
 
                 <div class="other-info">
