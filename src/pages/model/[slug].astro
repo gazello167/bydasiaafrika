@@ -95,6 +95,11 @@ const highPrice = validPrices.length ? Math.max(...validPrices) : startPrice;
 const seatSpec = model.specs?.find((s) => /kapasitas duduk|seat|kursi/i.test(s.label));
 const seatCount = seatSpec ? parseInt(seatSpec.value.replace(/\D/g, ''), 10) : undefined;
 
+const modelFaqs = Array.isArray(model.faqs)
+  ? model.faqs.filter((f) => f?.question?.trim() && f?.answer?.trim())
+  : [];
+const pureSpecs = (model.specs || []).filter((s) => s.label && !s.label.trim().endsWith('?'));  
+
 const productSchema: Record<string, unknown> = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -116,9 +121,9 @@ const productSchema: Record<string, unknown> = {
         '@type': 'EngineSpecification',
         fuelType: model.powertrain === 'BEV' ? 'Electricity' : 'Plug-in Hybrid (Petrol / Electricity)',
       },
-      ...(model.specs?.length
+      ...(pureSpecs.length
         ? {
-            additionalProperty: model.specs
+            additionalProperty: pureSpecs
               .filter((s) => s.label && s.value)
               .map((s) => ({
                 '@type': 'PropertyValue',
@@ -165,7 +170,23 @@ const productSchema: Record<string, unknown> = {
                   },
           }
         : {}),
-    },
+    },  
+      ...(modelFaqs.length > 0
+  ? [
+      {
+        '@type': 'FAQPage',
+        '@id': `${pageUrl}#faq`,
+        mainEntity: modelFaqs.map((f) => ({
+          '@type': 'Question',
+          name: f.question.trim(),
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: f.answer.trim(),
+          },
+        })),
+      },
+    ]
+  : []),  
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
@@ -335,10 +356,10 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
           <!-- TAB SPESIFIKASI -->
           <div class="tab-pane" id="tab-spesifikasi">
             <h2 class="tab-h2">Spesifikasi {model.name}</h2>
-            {model.specs?.length ? (
+            {pureSpecs?.length ? (
               <table class="specs">
                 <tbody>
-                  {model.specs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
+                  {pureSpecs.map((s) => <tr><th>{s.label}</th><td>{s.value}</td></tr>)}
                 </tbody>
               </table>
             ) : <p class="empty">Data spesifikasi dalam proses update.</p>}
@@ -545,6 +566,24 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
       </div>
     </div>
   </section>
+
+  {modelFaqs.length > 0 && (
+  <section class="section" id="faq-model">
+    <div class="container">
+      <h2 class="section-title">Pertanyaan Umum Seputar {model.name}</h2>
+      <p class="section-sub">Informasi harga OTR Bandung, pilihan warna, spesifikasi utama, pengisian daya, dan pajak tahunan</p>
+
+      <div class="model-faq-list">
+        {modelFaqs.map((f, idx) => (
+          <details class="model-faq-item" open={idx === 0}>
+            <summary>{f.question}</summary>
+            <p>{f.answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
 
   <section class="section" id="simulasi" style="background: var(--surface);">
     <div class="container">
@@ -1228,6 +1267,49 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
       font-size: 1rem;
     }
   }
+
+  .model-faq-list {
+  max-width: 880px;
+  margin: 24px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.model-faq-item {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+}
+.model-faq-item summary {
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+.model-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.model-faq-item summary::after {
+  content: '+';
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.model-faq-item[open] summary::after {
+  content: '−';
+}
+.model-faq-item p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
 </style>
 
 <script>

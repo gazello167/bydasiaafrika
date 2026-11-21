@@ -44,6 +44,9 @@ export interface CarModel {
   eksterior?: (string | FeatureItem)[];
   interior?: (string | FeatureItem)[];
   teknologi?: string[];
+  teknologi?: string;
+  safety?: string;
+  faqs?: { question: string; answer: string }[];
   cardImage?: string;
 }
 
