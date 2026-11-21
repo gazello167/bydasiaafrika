@@ -4,12 +4,10 @@ const year = new Date().getFullYear();
 ---
 <footer class="site">
   <div class="container">
-    <p><strong>{site.name}</strong></p>
+    <p><strong>{site.name}</strong><br>{site.shortName}</p>
     <address style="font-style: normal;">
       {site.address.street}, {site.address.city}, {site.address.region} {site.address.postalCode}<br />
       Telp: <a href={`tel:${site.phone}`}>{site.phone}</a>
     </address>
-    <p>{site.disclaimer}</p>
-    <p>&copy; {year} {site.name}</p>
   </div>
 </footer>
