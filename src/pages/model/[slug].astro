@@ -48,6 +48,18 @@ function normalizeItems(raw?: (string | FeatureItem)[]): FeatureItem[] {
     .filter((it) => it && (it.judul || it.gambar));
 }
 
+const formatDeskripsi = (raw: string) =>
+  raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (_m, text, href) => {
+      const isExt = /^https?:\/\//i.test(href);
+      const attrs = isExt ? ' target="_blank" rel="noopener noreferrer"' : '';
+      return `<a href="${href}"${attrs} class="desc-link">${text}</a>`;
+    });
+
 const warnaItems = normalizeItems(model.warna);
 const eksteriorItems = normalizeItems(model.eksterior);
 const interiorItems = normalizeItems(model.interior);
@@ -546,7 +558,7 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
   }
   .price-highlight .value {
     font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--ink);
     letter-spacing: -0.02em;
     overflow-wrap: anywhere;
@@ -714,7 +726,15 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
     font-size: 0.9rem;
     color: var(--muted);
   }
-
+  .desc-link {
+    color: #0284c7;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .desc-link:hover {
+    color: #0369a1;
+  }
   /* Specs table Modern (Zebra + Rounded Card) */
   .specs {
     width: 100%;
