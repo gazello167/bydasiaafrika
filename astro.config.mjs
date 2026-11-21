@@ -5,7 +5,11 @@ export default defineConfig({
   site: 'https://bydasiaafrika.com',
   output: 'static',
   trailingSlash: 'never',
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      lastmod: new Date(),
+    }),
+  ],
   image: {
     // Gambar lokal di src/assets otomatis jadi WebP/AVIF responsif
     layout: 'constrained',

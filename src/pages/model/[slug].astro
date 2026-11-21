@@ -99,10 +99,23 @@ const modelFaqs = Array.isArray(model.faqs)
   ? model.faqs.filter((f) => f?.question?.trim() && f?.answer?.trim())
   : [];
 const pureSpecs = (model.specs || []).filter((s) => s.label && !s.label.trim().endsWith('?'));  
+const buildIsoDate = new Date().toISOString();
+const priceValidUntil = `${new Date().getFullYear()}-12-31`;
 
 const productSchema: Record<string, unknown> = {
   '@context': 'https://schema.org',
   '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: seoTitle,
+      description: seoDesc,
+      inLanguage: 'id-ID',
+      dateModified: buildIsoDate,
+      isPartOf: { '@id': `${site.url}/#website` },
+      about: { '@id': `${pageUrl}#car` },
+    },
     {
       '@type': ['Product', 'Car'],
       '@id': `${pageUrl}#car`,
@@ -142,6 +155,7 @@ const productSchema: Record<string, unknown> = {
                     lowPrice: startPrice,
                     highPrice: highPrice,
                     offerCount: variantList.length,
+                    priceValidUntil,
                     availability: 'https://schema.org/InStock',
                     areaServed: { '@type': 'City', name: 'Bandung' },
                     seller: { '@id': `${site.url}/#dealer` },
@@ -152,6 +166,7 @@ const productSchema: Record<string, unknown> = {
                         name: `${model.name} ${v.tipe}`,
                         priceCurrency: 'IDR',
                         price: v.harga,
+                        priceValidUntil,
                         availability: 'https://schema.org/InStock',
                         itemCondition: 'https://schema.org/NewCondition',
                         url: pageUrl,
@@ -162,6 +177,7 @@ const productSchema: Record<string, unknown> = {
                     '@type': 'Offer',
                     priceCurrency: 'IDR',
                     price: startPrice,
+                    priceValidUntil,
                     availability: 'https://schema.org/InStock',
                     itemCondition: 'https://schema.org/NewCondition',
                     url: pageUrl,
@@ -170,23 +186,23 @@ const productSchema: Record<string, unknown> = {
                   },
           }
         : {}),
-    },  
-      ...(modelFaqs.length > 0
-  ? [
-      {
-        '@type': 'FAQPage',
-        '@id': `${pageUrl}#faq`,
-        mainEntity: modelFaqs.map((f) => ({
-          '@type': 'Question',
-          name: f.question.trim(),
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: f.answer.trim(),
+    },
+    ...(modelFaqs.length > 0
+      ? [
+          {
+            '@type': 'FAQPage',
+            '@id': `${pageUrl}#faq`,
+            mainEntity: modelFaqs.map((f) => ({
+              '@type': 'Question',
+              name: f.question.trim(),
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: f.answer.trim(),
+              },
+            })),
           },
-        })),
-      },
-    ]
-  : []),  
+        ]
+      : []),
     {
       '@type': 'BreadcrumbList',
       itemListElement: [

@@ -8,11 +8,106 @@ const sorted = [...models].sort(
   (a, b) => categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category),
 );
 
+const buildIsoDate = new Date().toISOString();
+const priceValidUntil = `${new Date().getFullYear()}-12-31`;
 const latestUpdate = models.find((m) => m.hargaUpdate)?.hargaUpdate;
+const pageUrl = new URL('/pricelist', site.url).toString();
+
+const pricelistSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: 'Pricelist Mobil BYD Bandung | Dealer BYD Asia Afrika',
+      description:
+        'Daftar harga OTR mobil BYD Bandung terbaru di dealer Asia Afrika Bandung, lengkap per model, tipe/varian, kategori, dan simulasi kredit.',
+      inLanguage: 'id-ID',
+      dateModified: buildIsoDate,
+      isPartOf: { '@id': `${site.url}/#website` },
+      about: { '@id': `${pageUrl}#list` },
+    },
+    {
+      '@type': 'ItemList',
+      '@id': `${pageUrl}#list`,
+      name: 'Daftar Harga OTR Mobil BYD Bandung Terbaru',
+      numberOfItems: sorted.length,
+      itemListElement: sorted.map((m, idx) => {
+        const modelUrl = new URL(`/model/${m.slug}`, site.url).toString();
+        const vList = m.variants?.length
+          ? m.variants.filter((v) => typeof v.harga === 'number' && v.harga > 0)
+          : m.hargaOTR
+            ? [{ tipe: 'Standard', harga: m.hargaOTR }]
+            : [];
+        const prices = vList.map((v) => v.harga as number);
+        const low = m.hargaOTR || (prices.length ? Math.min(...prices) : null);
+        const high = prices.length ? Math.max(...prices) : low;
+
+        return {
+          '@type': 'ListItem',
+          position: idx + 1,
+          url: modelUrl,
+          name: m.name,
+          item: {
+            '@type': ['Product', 'Car'],
+            name: m.name,
+            url: modelUrl,
+            bodyType: m.category,
+            ...(m.cardImage || m.image ? { image: m.cardImage || m.image } : {}),
+            brand: { '@type': 'Brand', name: 'BYD' },
+            ...(low
+              ? {
+                  offers:
+                    vList.length > 1
+                      ? {
+                          '@type': 'AggregateOffer',
+                          priceCurrency: 'IDR',
+                          lowPrice: low,
+                          highPrice: high,
+                          offerCount: vList.length,
+                          priceValidUntil,
+                          availability: 'https://schema.org/InStock',
+                          seller: { '@id': `${site.url}/#dealer` },
+                          offers: vList.map((v) => ({
+                            '@type': 'Offer',
+                            name: `${m.name} ${v.tipe}`,
+                            priceCurrency: 'IDR',
+                            price: v.harga,
+                            priceValidUntil,
+                            availability: 'https://schema.org/InStock',
+                            url: modelUrl,
+                            seller: { '@id': `${site.url}/#dealer` },
+                          })),
+                        }
+                      : {
+                          '@type': 'Offer',
+                          priceCurrency: 'IDR',
+                          price: low,
+                          priceValidUntil,
+                          availability: 'https://schema.org/InStock',
+                          url: modelUrl,
+                          seller: { '@id': `${site.url}/#dealer` },
+                        },
+                }
+              : {}),
+          },
+        };
+      }),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Beranda', item: site.url },
+        { '@type': 'ListItem', position: 2, name: 'Pricelist', item: pageUrl },
+      ],
+    },
+  ],
+};
 ---
 <BaseLayout
   title="Pricelist Mobil BYD Bandung | Dealer BYD Asia Afrika"
-  description="Daftar harga OTR mobil BYD terbaru di dealer Asia Afrika Bandung, lengkap per model, tipe/varian, kategori, dan simulasi kredit."
+  description="Daftar harga OTR mobil BYD Bandung terbaru di dealer Asia Afrika Bandung, lengkap per model, tipe/varian, kategori, dan simulasi kredit."
 >
   <section class="section">
     <div class="container">
