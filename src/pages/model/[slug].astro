@@ -241,21 +241,21 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
                 .split(/\n{2,}/)
                 .filter((p) => p.trim())
                 .map((p, idx, arr) => (
-                  <p style="white-space: pre-line;">
-                    <Fragment set:html={formatDeskripsi(p.trim())} />
+                  <div class="rich-block">
+                    <Fragment set:html={formatRichText(p.trim()).replace(/\n/g, '<br />')} />
                     {idx === arr.length - 1 && ` (${model.category}, ${powertrainLabels[model.powertrain]})`}
-                  </p>
+                  </div>
                 ))
             ) : (
-              <p>
-                <Fragment set:html={formatDeskripsi(model.tagline)} /> ({model.category}, {powertrainLabels[model.powertrain]})
-              </p>
+              <div class="rich-block">
+                <Fragment set:html={formatRichText(model.tagline)} /> ({model.category}, {powertrainLabels[model.powertrain]})
+              </div>
             )}
             {model.highlights?.length > 0 && (
               <>
                 <h3>Keunggulan Utama {model.name}</h3>
                 <ul>
-                  {model.highlights.map((h) => <li>{h}</li>)}
+                  {model.highlights.map((h) => <li set:html={formatRichText(h)} />)}
                 </ul>
               </>
             )}
