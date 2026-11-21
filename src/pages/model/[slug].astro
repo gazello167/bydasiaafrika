@@ -63,6 +63,25 @@ const formatRichText = (raw: string) =>
       return `<a href="${href}"${attrs} class="desc-link">${text}</a>`;
     });
 
+// Memecah teks Teknologi & Safety per baris menjadi item list bullet hijau (dan memisahkan gambar ![alt](url))
+function parseRichList(raw?: string | string[]) {
+  if (!raw) return [];
+  const lines = Array.isArray(raw) ? raw : raw.split(/\r?\n/);
+  return lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const imgMatch = line.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/);
+      if (imgMatch) {
+        return { type: 'image' as const, alt: imgMatch[1], src: imgMatch[2] };
+      }
+      return { type: 'item' as const, html: formatRichText(line) };
+    });
+}
+
+const teknologiItems = parseRichList(model.teknologi);
+const safetyItems = parseRichList(model.safety);    
+
 const warnaItems = normalizeItems(model.warna);
 const eksteriorItems = normalizeItems(model.eksterior);
 const interiorItems = normalizeItems(model.interior);
@@ -424,39 +443,55 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
             ) : <p class="empty">Data interior dalam proses update.</p>}
           </div>
 
-          <!-- TAB TEKNOLOGI -->
-       <div class="tab-pane" id="tab-teknologi">
-         <h2 class="tab-h2">Teknologi {model.name}</h2>
-         {typeof model.teknologi === 'string' && model.teknologi.trim() ? (
-           model.teknologi
-             .split(/\n{2,}/)
-             .filter((p) => p.trim())
-             .map((p) => (
-               <div class="rich-block" set:html={formatRichText(p.trim()).replace(/\n/g, '<br />')} />
-             ))
-         ) : Array.isArray(model.teknologi) && model.teknologi.length ? (
-           <ul>
-             {model.teknologi.map((t) => <li set:html={formatRichText(t)} />)}
-           </ul>
-         ) : <p class="empty">Data teknologi dalam proses update.</p>}
-       </div>
+       <!-- TAB TEKNOLOGI -->
+          <div class="tab-pane" id="tab-teknologi">
+            <h2 class="tab-h2">Teknologi {model.name}</h2>
+            {teknologiItems.length > 0 ? (
+              <ul class="accent-bullet-list">
+                {teknologiItems.map((entry) =>
+                  entry.type === 'image' ? (
+                    <li class="is-media">
+                      <figure class="rich-media">
+                        <img src={entry.src} alt={entry.alt} loading="lazy" />
+                      </figure>
+                    </li>
+                  ) : (
+                    <li class="is-bullet">
+                      <span class="b-dot" aria-hidden="true"></span>
+                      <div class="b-text" set:html={entry.html} />
+                    </li>
+                  )
+                )}
+              </ul>
+            ) : (
+              <p class="empty">Data teknologi dalam proses update.</p>
+            )}
+          </div>
 
-       <!-- TAB SAFETY -->
-       <div class="tab-pane" id="tab-safety">
-         <h2 class="tab-h2">Fitur Safety & Keamanan {model.name}</h2>
-         {typeof model.safety === 'string' && model.safety.trim() ? (
-           model.safety
-             .split(/\n{2,}/)
-             .filter((p) => p.trim())
-             .map((p) => (
-               <div class="rich-block" set:html={formatRichText(p.trim()).replace(/\n/g, '<br />')} />
-             ))
-         ) : Array.isArray(model.safety) && model.safety.length ? (
-           <ul>
-             {model.safety.map((s) => <li set:html={formatRichText(s)} />)}
-           </ul>
-         ) : <p class="empty">Data fitur safety dalam proses update.</p>}
-       </div>
+          <!-- TAB SAFETY -->
+          <div class="tab-pane" id="tab-safety">
+            <h2 class="tab-h2">Fitur Safety & Keamanan {model.name}</h2>
+            {safetyItems.length > 0 ? (
+              <ul class="accent-bullet-list">
+                {safetyItems.map((entry) =>
+                  entry.type === 'image' ? (
+                    <li class="is-media">
+                      <figure class="rich-media">
+                        <img src={entry.src} alt={entry.alt} loading="lazy" />
+                      </figure>
+                    </li>
+                  ) : (
+                    <li class="is-bullet">
+                      <span class="b-dot" aria-hidden="true"></span>
+                      <div class="b-text" set:html={entry.html} />
+                    </li>
+                  )
+                )}
+              </ul>
+            ) : (
+              <p class="empty">Data fitur safety dalam proses update.</p>
+            )}
+          </div>
 
           <!-- TAB BROSUR (Interactive PDF Embed) -->
           <div class="tab-pane" id="tab-brosur">
@@ -899,6 +934,55 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
   display: block;
   }
 
+  /* List Bullet Titik Hijau Aksen (Teknologi & Safety) */
+  .accent-bullet-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .accent-bullet-list li.is-bullet {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.15s ease;
+  }
+  .accent-bullet-list li.is-bullet:last-child {
+    border-bottom: 0;
+  }
+  .accent-bullet-list li.is-bullet:hover {
+    background: #f8fafc;
+  }
+  .accent-bullet-list .b-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent, #b4d233);
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+  .accent-bullet-list .b-text {
+    line-height: 1.62;
+    color: var(--ink);
+    font-size: 0.96rem;
+  }
+  .accent-bullet-list li.is-media {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+  }
+  .accent-bullet-list li.is-media:last-child {
+    border-bottom: 0;
+  }
+  .accent-bullet-list li.is-media .rich-media {
+    margin: 0;
+  }
+  
   /* Interactive E-Brosur Embed */
   .brosur-viewer-wrap {
     display: flex;
