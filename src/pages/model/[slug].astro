@@ -48,11 +48,14 @@ function normalizeItems(raw?: (string | FeatureItem)[]): FeatureItem[] {
     .filter((it) => it && (it.judul || it.gambar));
 }
 
-const formatDeskripsi = (raw: string) =>
+const formatRichText = (raw: string) =>
   raw
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+    .replace(/!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g, (_m, alt, src) => {
+      return `<figure class="rich-media"><img src="${src}" alt="${alt}" loading="lazy" /></figure>`;
+    })
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, (_m, text, href) => {
       const isExt = /^https?:\/\//i.test(href);
@@ -224,6 +227,8 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
           <button class="tab-btn" data-tab="eksterior" role="tab">EKSTERIOR</button>
           <button class="tab-btn" data-tab="interior" role="tab">INTERIOR</button>
           <button class="tab-btn" data-tab="teknologi" role="tab">TEKNOLOGI</button>
+          <button class="tab-btn" data-tab="safety" role="tab">SAFETY</button>
+          <button class="tab-btn" data-tab="brosur" role="tab">BROSUR</button>
           <button class="tab-btn" data-tab="brosur" role="tab">BROSUR</button>
         </div>
 
@@ -368,14 +373,38 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
           </div>
 
           <!-- TAB TEKNOLOGI -->
-          <div class="tab-pane" id="tab-teknologi">
-            <h2 class="tab-h2">Teknologi {model.name}</h2>
-            {model.teknologi?.length ? (
-              <ul>
-                {model.teknologi.map((t) => <li>{t}</li>)}
-              </ul>
-            ) : <p class="empty">Data teknologi dalam proses update.</p>}
-          </div>
+       <div class="tab-pane" id="tab-teknologi">
+         <h2 class="tab-h2">Teknologi {model.name}</h2>
+         {typeof model.teknologi === 'string' && model.teknologi.trim() ? (
+           model.teknologi
+             .split(/\n{2,}/)
+             .filter((p) => p.trim())
+             .map((p) => (
+               <div class="rich-block" set:html={formatRichText(p.trim()).replace(/\n/g, '<br />')} />
+             ))
+         ) : Array.isArray(model.teknologi) && model.teknologi.length ? (
+           <ul>
+             {model.teknologi.map((t) => <li set:html={formatRichText(t)} />)}
+           </ul>
+         ) : <p class="empty">Data teknologi dalam proses update.</p>}
+       </div>
+
+       <!-- TAB SAFETY -->
+       <div class="tab-pane" id="tab-safety">
+         <h2 class="tab-h2">Fitur Safety & Keamanan {model.name}</h2>
+         {typeof model.safety === 'string' && model.safety.trim() ? (
+           model.safety
+             .split(/\n{2,}/)
+             .filter((p) => p.trim())
+             .map((p) => (
+               <div class="rich-block" set:html={formatRichText(p.trim()).replace(/\n/g, '<br />')} />
+             ))
+         ) : Array.isArray(model.safety) && model.safety.length ? (
+           <ul>
+             {model.safety.map((s) => <li set:html={formatRichText(s)} />)}
+           </ul>
+         ) : <p class="empty">Data fitur safety dalam proses update.</p>}
+       </div>
 
           <!-- TAB BROSUR (Interactive PDF Embed) -->
           <div class="tab-pane" id="tab-brosur">
@@ -798,6 +827,24 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
     .specs td {
       padding-top: 2px;
     }
+  }
+
+ .rich-block {
+      margin: 0 0 1rem;
+      line-height: 1.68;
+  }
+.rich-media {
+      margin: 1rem 0;
+      max-width: 720px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+  }
+  .rich-media img {
+  width: 100%;
+  height: auto;
+  display: block;
   }
 
   /* Interactive E-Brosur Embed */
