@@ -39,6 +39,8 @@ export const site = {
     instagram: '',
     threads: '',
     pinterest: '',
+    tiktok: '',
+    youtube: '',
   },
   // Isi jika dealer resmi, tampil di footer sebagai keterbukaan status.
   disclaimer:
