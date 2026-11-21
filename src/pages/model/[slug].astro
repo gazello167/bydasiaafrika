@@ -71,38 +71,91 @@ const hasWarnaImages = warnaItems.some((it) => Boolean(it.gambar));
 const hasEksteriorImages = eksteriorItems.some((it) => Boolean(it.gambar));
 const hasInteriorImages = interiorItems.some((it) => Boolean(it.gambar));
 
-const productSchema = {
+const pageUrl = new URL(`/model/${model.slug}`, site.url).toString();
+const highPrice = validPrices.length ? Math.max(...validPrices) : startPrice;
+const seatSpec = model.specs?.find((s) => /kapasitas duduk|seat|kursi/i.test(s.label));
+const seatCount = seatSpec ? parseInt(seatSpec.value.replace(/\D/g, ''), 10) : undefined;
+
+const productSchema: Record<string, unknown> = {
   '@context': 'https://schema.org',
-  '@type': 'Product',
-  name: model.name,
-  description: seoDesc,
-  ...(model.image ? { image: [model.image] } : {}),
-  ...(model.focusKeyword ? { keywords: model.focusKeyword } : {}),
-  brand: { '@type': 'Brand', name: 'BYD' },
-  ...(startPrice
-    ? {
-        offers: {
-          '@type': 'Offer',
-          priceCurrency: 'IDR',
-          price: startPrice,
-          availability: 'https://schema.org/InStock',
-          areaServed: {
-            '@type': 'City',
-            name: 'Bandung',
-          },
-          seller: {
-            '@type': 'AutoDealer',
-            name: site.name,
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: 'Bandung',
-              addressRegion: 'Jawa Barat',
-              addressCountry: 'ID',
-            },
-          },
-        },
-      }
-    : {}),
+  '@graph': [
+    {
+      '@type': ['Product', 'Car'],
+      '@id': `${pageUrl}#car`,
+      name: model.name,
+      description: seoDesc,
+      url: pageUrl,
+      sku: `BYD-${model.slug.toUpperCase()}`,
+      bodyType: model.category,
+      ...(seatCount ? { seatingCapacity: seatCount } : {}),
+      ...(warnaItems.length ? { color: warnaItems.map((w) => w.judul).filter(Boolean) } : {}),
+      ...(galleryList.length ? { image: galleryList } : {}),
+      ...(model.focusKeyword ? { keywords: model.focusKeyword } : {}),
+      brand: { '@type': 'Brand', name: 'BYD' },
+      manufacturer: { '@type': 'Organization', name: 'BYD Auto' },
+      vehicleEngine: {
+        '@type': 'EngineSpecification',
+        fuelType: model.powertrain === 'BEV' ? 'Electricity' : 'Plug-in Hybrid (Petrol / Electricity)',
+      },
+      ...(model.specs?.length
+        ? {
+            additionalProperty: model.specs
+              .filter((s) => s.label && s.value)
+              .map((s) => ({
+                '@type': 'PropertyValue',
+                name: s.label,
+                value: s.value,
+              })),
+          }
+        : {}),
+      ...(startPrice
+        ? {
+            offers:
+              variantList.length > 1
+                ? {
+                    '@type': 'AggregateOffer',
+                    priceCurrency: 'IDR',
+                    lowPrice: startPrice,
+                    highPrice: highPrice,
+                    offerCount: variantList.length,
+                    availability: 'https://schema.org/InStock',
+                    areaServed: { '@type': 'City', name: 'Bandung' },
+                    seller: { '@id': `${site.url}/#dealer` },
+                    offers: variantList
+                      .filter((v) => typeof v.harga === 'number' && v.harga > 0)
+                      .map((v) => ({
+                        '@type': 'Offer',
+                        name: `${model.name} ${v.tipe}`,
+                        priceCurrency: 'IDR',
+                        price: v.harga,
+                        availability: 'https://schema.org/InStock',
+                        itemCondition: 'https://schema.org/NewCondition',
+                        url: pageUrl,
+                        seller: { '@id': `${site.url}/#dealer` },
+                      })),
+                  }
+                : {
+                    '@type': 'Offer',
+                    priceCurrency: 'IDR',
+                    price: startPrice,
+                    availability: 'https://schema.org/InStock',
+                    itemCondition: 'https://schema.org/NewCondition',
+                    url: pageUrl,
+                    areaServed: { '@type': 'City', name: 'Bandung' },
+                    seller: { '@id': `${site.url}/#dealer` },
+                  },
+          }
+        : {}),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Beranda', item: site.url },
+        { '@type': 'ListItem', position: 2, name: 'Model', item: `${site.url}/model` },
+        { '@type': 'ListItem', position: 3, name: model.name, item: pageUrl },
+      ],
+    },
+  ],
 };
 
 const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
@@ -228,7 +281,6 @@ const waMsg = `Halo, saya ingin info promo & test drive BYD ${cleanName}.`;
           <button class="tab-btn" data-tab="interior" role="tab">INTERIOR</button>
           <button class="tab-btn" data-tab="teknologi" role="tab">TEKNOLOGI</button>
           <button class="tab-btn" data-tab="safety" role="tab">SAFETY</button>
-          <button class="tab-btn" data-tab="brosur" role="tab">BROSUR</button>
           <button class="tab-btn" data-tab="brosur" role="tab">BROSUR</button>
         </div>
 

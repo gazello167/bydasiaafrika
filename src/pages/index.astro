@@ -4,11 +4,59 @@ import HeroSlider from '../components/HeroSlider.astro';
 import ModelCatalog from '../components/ModelCatalog.astro';
 import QuickLinks from '../components/QuickLinks.astro';
 import Discover from '../components/Discover.astro';
+import { models } from '../data/models';
 import { site, waLink } from '../data/site';
+
+const homeFaqs = [
+  {
+    question: 'Di mana lokasi showroom resmi BYD Asia Afrika Bandung?',
+    answer: `Showroom resmi BYD Asia Afrika Bandung berlokasi di ${site.address.street}, ${site.address.city}, ${site.address.region}. Melayani pameran unit display, test drive, konsultasi kredit, dan purna jual.`,
+  },
+  {
+    question: 'Bagaimana cara booking test drive mobil listrik BYD di Bandung?',
+    answer: 'Anda dapat menjadwalkan test drive langsung melalui menu Test Drive di website bydasiaafrika.com atau via WhatsApp sales untuk pilihan test drive di showroom maupun home test drive area Bandung Raya.',
+  },
+  {
+    question: 'Apakah pembelian mobil BYD sudah termasuk paket home charging?',
+    answer: 'Setiap pembelian unit mobil listrik BYD (BEV) dilengkapi perangkat portable charger dan program instalasi wall charger AC 7 kW di rumah sesuai ketentuan promo yang berlaku.',
+  },
+  {
+    question: 'Apakah tersedia simulasi kredit dan tukar tambah (trade-in) di BYD Bandung?',
+    answer: 'Ya, tersedia simulasi kredit DP ringan dengan tenor hingga 5–6 tahun serta layanan trade-in mobil lama semua merek dengan taksiran harga transparan.',
+  },
+];
+
+const homeSchema = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ItemList',
+      '@id': `${site.url}/#katalog-model`,
+      name: 'Katalog Lini Mobil Listrik BYD Bandung',
+      numberOfItems: models.length,
+      itemListElement: models.map((m, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        url: `${site.url}/model/${m.slug}`,
+        name: m.name,
+      })),
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${site.url}/#faq-home`,
+      mainEntity: homeFaqs.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: { '@type': 'Answer', text: f.answer },
+      })),
+    },
+  ],
+};
 ---
 <BaseLayout
   title="Dealer BYD Asia Afrika Bandung | Test Drive & Simulasi Kredit"
   description="Dealer BYD di Jl. Asia Afrika, Bandung. Lihat model, harga, simulasi kredit, dan jadwalkan test drive mobil listrik BYD."
+  schema={homeSchema}
 >
   <HeroSlider />
   <ModelCatalog />
@@ -33,4 +81,29 @@ import { site, waLink } from '../data/site';
       </p>
     </div>
   </section>
+
+  <section class="section" id="faq" style="background: var(--surface);">
+    <div class="container">
+      <h2 class="section-title">Pertanyaan Umum Pembeli BYD di Bandung</h2>
+      <p class="section-sub">Informasi showroom, jadwal test drive, home charging, dan simulasi kredit</p>
+      <div class="home-faq-list">
+        {homeFaqs.map((f, idx) => (
+          <details class="home-faq-item" open={idx === 0}>
+            <summary>{f.question}</summary>
+            <p>{f.answer}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
 </BaseLayout>
+
+<style>
+  .home-faq-list { max-width: 860px; margin: 24px auto 0; display: flex; flex-direction: column; gap: 12px; }
+  .home-faq-item { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
+  .home-faq-item summary { font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .home-faq-item summary::-webkit-details-marker { display: none; }
+  .home-faq-item summary::after { content: '+'; font-size: 1.25rem; font-weight: 700; color: var(--muted); }
+  .home-faq-item[open] summary::after { content: '−'; }
+  .home-faq-item p { margin: 12px 0 0; color: var(--muted); line-height: 1.65; font-size: 0.95rem; }
+</style>
